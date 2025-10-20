@@ -19,7 +19,60 @@ class _ToolPageState extends State<ToolPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Center(child: Text(AppLocalizations.of(context)!.todo)),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
+                ),
+                icon: Icon(Icons.build),
+                label: Text('Button'),
+                onPressed: () {},
+              ),
+            ),
+            SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
+                ),
+                icon: Icon(Icons.build),
+                label: Text('Button'),
+                onPressed: () {},
+              ),
+            ),
+            SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
+                ),
+                icon: Icon(Icons.build),
+                label: Text('Button'),
+                onPressed: () {},
+              ),
+            ),
+            SizedBox(height: 8),
+            Center(child: Text(AppLocalizations.of(context)!.todo)),
+          ],
+        ),
       ),
     );
   }
