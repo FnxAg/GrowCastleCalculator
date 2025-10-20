@@ -1,0 +1,61 @@
+{
+    "appName": "成长城堡计算器",
+    "calculator": "计算器",
+    "tool": "工具",
+    "settings": "设置",
+    "castleDefault": "城堡（默认）",
+    "taDefault": "城弓（默认）",
+    "clearInputFields": "清空输入",
+    "loadData": "载入数据",
+    "currentWave": "当前波数",
+    "typeCurrentWave": "输入当前波数",
+    "seasonalWave": "赛季波数",
+    "typeSeasonalWave": "输入赛季波数",
+    "totalWave": "总波数：",
+    "totalGold": "总经济：",
+    "gp": "GP：",
+    "ratio": "比例：",
+    "unitName": "单位名称",
+    "typeUnitName": "输入单位名称",
+    "unitLevel": "单位等级",
+    "typeUnitLevel": "输入单位等级",
+    "remove": "移除",
+    "add": "新增",
+    "save": "保存",
+    "todo": "工具页面\n施工中\n未来可能的新功能：\n- 收入计算器\n- 赛季/无尽/赛季殖民地重置倒计时\n- 升级计算器\n- 通天回本计算器\n- 伤害对比\n- 收益计算",
+    "language": "语言",
+    "themeMode": "主题模式",
+    "systemDefault": "跟随系统",
+    "lightMode": "浅色",
+    "darkMode": "深色",
+    "clearSavedData": "清除数据",
+    "clearDataWarning": "您确定要清除已保存的数据吗？此操作无法撤销。",
+    "cancel": "取消",
+    "confirm": "确认",
+    "clearDataFinished": "数据已清除",
+    "about": "关于",
+    "version": "版本",
+    "developer": "by FnxAg aka Ariyara",
+    "appVersion": "版本 {versionNumber}",
+    "@appVersion": {
+        "placeholders": {
+            "versionNumber": {
+                "type": "String"
+            }
+        }
+    },
+    "github": "GitHub",
+    "repositoryUrl": "https://github.com/FnxAg/GrowCastleCalculator",
+    "bilibili": "Bilibili",
+    "developerBilibiliUrl": "https://space.bilibili.com/505144597",
+    "cannotLaunchURL": "无法打开链接：{url}",
+    "@cannotLaunchURL": {
+        "placeholders": {
+            "url": {
+                "type": "String"
+            }
+        }
+    },
+    "zh_CN_withCode": "zh_CN\t简体中文",
+    "en_withCode": "en\tEnglish"
+}

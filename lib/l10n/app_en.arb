@@ -1,0 +1,61 @@
+{
+    "appName": "Grow Castle Calculator",
+    "calculator": "Calculator",
+    "tool": "Tool",
+    "settings": "Settings",
+    "castleDefault": "Castle (Default)",
+    "taDefault": "TA (Default)",
+    "clearInputFields": "Clear Input Fields",
+    "loadData": "Load Data",
+    "currentWave": "Current Wave",
+    "typeCurrentWave": "Type Current Wave",
+    "seasonalWave": "Seasonal Wave",
+    "typeSeasonalWave": "Type Seasonal Wave",
+    "totalWave": "Total Wave: ",
+    "totalGold": "Total Gold: ",
+    "gp": "GP: ",
+    "ratio": "Ratio: ",
+    "unitName": "Unit Name",
+    "typeUnitName": "Type Unit Name",
+    "unitLevel": "Unit Level",
+    "typeUnitLevel": "Type Unit Level",
+    "remove": "Remove",
+    "add": "Add",
+    "save": "Save",
+    "todo": "Tool Page\nComing Soon!\nTodo List:\n- Gold Calculator\n- Time Till Reset\n- Level Cost Calculator\n- Infinite Colony Calculator\n- Damage Comparison\n- GPW",
+    "language": "Language",
+    "themeMode": "Theme Mode",
+    "systemDefault": "System",
+    "lightMode": "Light",
+    "darkMode": "Dark",
+    "clearSavedData": "Clear Data",
+    "clearDataWarning": "Are you sure you want to clear saved data? This action cannot be undone.",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "clearDataFinished": "Saved data cleared.",
+    "about": "About",
+    "version": "Version",
+    "developer": "by FnxAg aka Ariyara",
+    "appVersion": "Version {versionNumber}",
+    "@appVersion": {
+        "placeholders": {
+            "versionNumber": {
+                "type": "String"
+            }
+        }
+    },
+    "github": "GitHub",
+    "repositoryUrl": "https://github.com/FnxAg/GrowCastleCalculator",
+    "bilibili": "Bilibili",
+    "developerBilibiliUrl": "https://space.bilibili.com/505144597",
+    "cannotLaunchURL": "Cannot launch URL: {url}",
+    "@cannotLaunchURL": {
+        "placeholders": {
+            "url": {
+                "type": "String"
+            }
+        }
+    },
+    "zh_CN_withCode": "zh_CN\t简体中文",
+    "en_withCode": "en\tEnglish"
+}
