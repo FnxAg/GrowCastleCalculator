@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -133,6 +134,8 @@ class _CalculatorPageState extends State<CalculatorPage>
     return _decreaseNumSize(gold);
   });
 
+  late Timer _timer;
+
   double get _totalGold => _targetGold
       .asMap()
       .entries
@@ -198,7 +201,7 @@ class _CalculatorPageState extends State<CalculatorPage>
     );
   }
 
-  Future<void> _removeCalculatorData() async {
+  Future<void> _clearCalculatorFormData() async {
     setState(() {
       for (var c in _waveValueControllers) {
         c.text = '';
@@ -211,6 +214,8 @@ class _CalculatorPageState extends State<CalculatorPage>
       }
     });
   }
+
+  DateTime now = DateTime.now();
 
   final List<TextEditingController> _waveValueControllers = List.generate(
     2,
@@ -234,6 +239,11 @@ class _CalculatorPageState extends State<CalculatorPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     loadCalculatorData();
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      setState(() {
+        now = DateTime.now();
+      });
+    });
   }
 
   @override
@@ -250,6 +260,7 @@ class _CalculatorPageState extends State<CalculatorPage>
     for (var c in _defaultFormNameControllers) {
       c.dispose();
     }
+    _timer.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -274,25 +285,26 @@ class _CalculatorPageState extends State<CalculatorPage>
     _defaultFormNameControllers[1].text = AppLocalizations.of(
       context,
     )!.taDefault;
+    var seasonProgress =
+        ((now.millisecondsSinceEpoch / 1000 % 432000 - 312900 > 0
+            ? now.millisecondsSinceEpoch / 1000 % 432000 - 312900
+            : now.millisecondsSinceEpoch / 1000 % 432000 + 119100) /
+        432000);
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.calculator),
         elevation: 1,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         actions: [
-          IconButton(
-            onPressed: () {
-              _removeCalculatorData();
-            },
-            icon: const Icon(Icons.delete),
-            tooltip: AppLocalizations.of(context)!.clearInputFields,
-          ),
-          IconButton(
-            onPressed: () {
-              loadCalculatorData();
-            },
-            icon: const Icon(Icons.download),
-            tooltip: AppLocalizations.of(context)!.loadData,
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Icon(Icons.timer),
+                SizedBox(width: 8),
+                Text('${(seasonProgress * 100).toStringAsFixed(2)}%'),
+              ],
+            ),
           ),
         ],
       ),
@@ -328,8 +340,12 @@ class _CalculatorPageState extends State<CalculatorPage>
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.seasonalWave,
-                      hintText: AppLocalizations.of(context)!.typeSeasonalWave,
+                      labelText: AppLocalizations.of(
+                        context,
+                      )!.currentSeasonalWave,
+                      hintText: AppLocalizations.of(
+                        context,
+                      )!.typeCurrentSeasonalWave,
                       border: const OutlineInputBorder(),
                     ),
                     onChanged: (value) {
@@ -346,10 +362,13 @@ class _CalculatorPageState extends State<CalculatorPage>
               spacing: 8,
               children: [
                 Text(
-                  '${AppLocalizations.of(context)!.totalWave}${_waveValue[0] + _waveValue[1]}',
+                  AppLocalizations.of(context)!.totalGold + _totalGoldString,
                 ),
                 Text(
-                  AppLocalizations.of(context)!.totalGold + _totalGoldString,
+                  AppLocalizations.of(context)!.wph +
+                      (_waveValue[1] / (120 * seasonProgress)).toStringAsFixed(
+                        2,
+                      ),
                 ),
               ],
             ),
@@ -475,34 +494,77 @@ class _CalculatorPageState extends State<CalculatorPage>
               mainAxisAlignment: MainAxisAlignment.center,
               spacing: 8,
               children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _dynamicFormNum > _minFormLimit
-                          ? _dynamicFormNum--
-                          : _dynamicFormNum;
-                    });
-                  },
-                  icon: Icon(Icons.remove),
-                  label: Text(AppLocalizations.of(context)!.remove),
+                Tooltip(
+                  message: AppLocalizations.of(context)!.clearInputFields,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _clearCalculatorFormData();
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    child: const Icon(Icons.delete),
+                  ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _dynamicFormNum < _maxFormLimit
-                          ? _dynamicFormNum++
-                          : _dynamicFormNum;
-                    });
-                  },
-                  icon: Icon(Icons.add),
-                  label: Text(AppLocalizations.of(context)!.add),
+                Tooltip(
+                  message: AppLocalizations.of(context)!.loadData,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        loadCalculatorData();
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    child: const Icon(Icons.download),
+                  ),
                 ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _saveCalculatorData();
-                  },
-                  icon: Icon(Icons.save),
-                  label: Text(AppLocalizations.of(context)!.save),
+                Tooltip(
+                  message: AppLocalizations.of(context)!.remove,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _dynamicFormNum > _minFormLimit
+                            ? _dynamicFormNum--
+                            : _dynamicFormNum;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    child: const Icon(Icons.remove),
+                  ),
+                ),
+                Tooltip(
+                  message: AppLocalizations.of(context)!.add,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        _dynamicFormNum < _maxFormLimit
+                            ? _dynamicFormNum++
+                            : _dynamicFormNum;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    child: const Icon(Icons.add),
+                  ),
+                ),
+                Tooltip(
+                  message: AppLocalizations.of(context)!.save,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _saveCalculatorData();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(12),
+                    ),
+                    child: const Icon(Icons.save),
+                  ),
                 ),
               ],
             ),
