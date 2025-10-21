@@ -27,7 +27,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taDefault => 'TA (Default)';
 
   @override
-  String get clearInputFields => 'Clear Input Fields';
+  String get clearInputFields => 'Clear All Input Fields';
 
   @override
   String get loadData => 'Load Data';
@@ -45,6 +45,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get typeSeasonalWave => 'Type Seasonal Wave';
 
   @override
+  String get currentSeasonalWave => 'Current Seasonal Wave';
+
+  @override
+  String get typeCurrentSeasonalWave => 'Type Current Seasonal Wave';
+
+  @override
   String get totalWave => 'Total Wave: ';
 
   @override
@@ -55,6 +61,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratio => 'Ratio: ';
+
+  @override
+  String get seasonProgress => 'Season Progress: ';
+
+  @override
+  String get wph => 'WPH: ';
 
   @override
   String get unitName => 'Unit Name';

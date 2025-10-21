@@ -137,7 +137,7 @@ abstract class AppLocalizations {
   /// No description provided for @clearInputFields.
   ///
   /// In en, this message translates to:
-  /// **'Clear Input Fields'**
+  /// **'Clear All Input Fields'**
   String get clearInputFields;
 
   /// No description provided for @loadData.
@@ -170,6 +170,18 @@ abstract class AppLocalizations {
   /// **'Type Seasonal Wave'**
   String get typeSeasonalWave;
 
+  /// No description provided for @currentSeasonalWave.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Seasonal Wave'**
+  String get currentSeasonalWave;
+
+  /// No description provided for @typeCurrentSeasonalWave.
+  ///
+  /// In en, this message translates to:
+  /// **'Type Current Seasonal Wave'**
+  String get typeCurrentSeasonalWave;
+
   /// No description provided for @totalWave.
   ///
   /// In en, this message translates to:
@@ -193,6 +205,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ratio: '**
   String get ratio;
+
+  /// No description provided for @seasonProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Season Progress: '**
+  String get seasonProgress;
+
+  /// No description provided for @wph.
+  ///
+  /// In en, this message translates to:
+  /// **'WPH: '**
+  String get wph;
 
   /// No description provided for @unitName.
   ///

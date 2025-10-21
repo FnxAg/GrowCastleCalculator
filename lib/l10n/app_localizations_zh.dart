@@ -27,7 +27,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get taDefault => '城弓（默认）';
 
   @override
-  String get clearInputFields => '清空输入';
+  String get clearInputFields => '清空所有输入';
 
   @override
   String get loadData => '载入数据';
@@ -45,6 +45,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get typeSeasonalWave => '输入赛季波数';
 
   @override
+  String get currentSeasonalWave => '当前赛季波数';
+
+  @override
+  String get typeCurrentSeasonalWave => '输入当前赛季波数';
+
+  @override
   String get totalWave => '总波数：';
 
   @override
@@ -54,7 +60,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get gp => 'GP：';
 
   @override
-  String get ratio => '比例：';
+  String get ratio => '指数：';
+
+  @override
+  String get seasonProgress => '赛季进度：';
+
+  @override
+  String get wph => '波速：';
 
   @override
   String get unitName => '单位名称';
