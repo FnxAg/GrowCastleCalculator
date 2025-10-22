@@ -18,8 +18,18 @@
     "gp": "GP: ",
     "ratio": "Ratio: ",
     "seasonProgress": "Season Progress: ",
+    "progress": "Progress",
+    "updateTime": "Update Time: ",
+    "timeTillReset": "Time Till Reset: ",
     "wph": "WPH: ",
-    "unitName": "Unit Name",
+    "unitName": "Unit {index} Name",
+    "@unitName": {
+        "placeholders": {
+            "index": {
+                "type": "int"
+            }
+        }
+    },
     "typeUnitName": "Type Unit Name",
     "unitLevel": "Unit Level",
     "typeUnitLevel": "Type Unit Level",

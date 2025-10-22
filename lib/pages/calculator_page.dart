@@ -285,11 +285,11 @@ class _CalculatorPageState extends State<CalculatorPage>
     _defaultFormNameControllers[1].text = AppLocalizations.of(
       context,
     )!.taDefault;
-    var seasonProgress =
-        ((now.millisecondsSinceEpoch / 1000 % 432000 - 312900 > 0
-            ? now.millisecondsSinceEpoch / 1000 % 432000 - 312900
-            : now.millisecondsSinceEpoch / 1000 % 432000 + 119100) /
-        432000);
+    int seasonPassedMilliseconds =
+        now.millisecondsSinceEpoch % 432000000 - 312900000 > 0
+        ? now.millisecondsSinceEpoch % 432000000 - 312900000
+        : now.millisecondsSinceEpoch % 432000000 + 119100000;
+    double seasonProgress = seasonPassedMilliseconds / 432000000;
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.calculator),
@@ -300,9 +300,55 @@ class _CalculatorPageState extends State<CalculatorPage>
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                Icon(Icons.timer),
-                SizedBox(width: 8),
-                Text('${(seasonProgress * 100).toStringAsFixed(2)}%'),
+                InkWell(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: Text(AppLocalizations.of(context)!.progress),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${AppLocalizations.of(context)!.seasonProgress}${(seasonProgress * 100).toStringAsFixed(2)}%',
+                                  textAlign: TextAlign.left,
+                                ),
+                                Text(
+                                  '${AppLocalizations.of(context)!.updateTime}${DateTime.fromMillisecondsSinceEpoch((now.millisecondsSinceEpoch - seasonPassedMilliseconds + 432000000).toInt()).toLocal().toString().split(".")[0]}',
+                                  textAlign: TextAlign.left,
+                                ),
+                                Text(
+                                  '${AppLocalizations.of(context)!.timeTillReset}${(120 * (1 - seasonProgress)).toStringAsFixed(2)}h',
+                                  textAlign: TextAlign.left,
+                                ),
+                              ],
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text(
+                                AppLocalizations.of(context)!.confirm,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  child: Row(
+                    children: [
+                      Icon(Icons.timer),
+                      SizedBox(width: 4),
+                      Text('${(seasonProgress * 100).toStringAsFixed(2)}%'),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -425,7 +471,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                                 decoration: InputDecoration(
                                   labelText: AppLocalizations.of(
                                     context,
-                                  )!.unitName,
+                                  )!.unitName(index + 1),
                                   hintText: AppLocalizations.of(
                                     context,
                                   )!.typeUnitName,

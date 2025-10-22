@@ -66,10 +66,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seasonProgress => 'Season Progress: ';
 
   @override
+  String get progress => 'Progress';
+
+  @override
+  String get updateTime => 'Update Time: ';
+
+  @override
+  String get timeTillReset => 'Time Till Reset: ';
+
+  @override
   String get wph => 'WPH: ';
 
   @override
-  String get unitName => 'Unit Name';
+  String unitName(int index) {
+    return 'Unit $index Name';
+  }
 
   @override
   String get typeUnitName => 'Type Unit Name';

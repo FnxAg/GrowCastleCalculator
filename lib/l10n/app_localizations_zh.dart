@@ -66,10 +66,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seasonProgress => '赛季进度：';
 
   @override
+  String get progress => '进度';
+
+  @override
+  String get updateTime => '更新时间：';
+
+  @override
+  String get timeTillReset => '重置倒计时：';
+
+  @override
   String get wph => '波速：';
 
   @override
-  String get unitName => '单位名称';
+  String unitName(int index) {
+    return '单位 $index 名称';
+  }
 
   @override
   String get typeUnitName => '输入单位名称';

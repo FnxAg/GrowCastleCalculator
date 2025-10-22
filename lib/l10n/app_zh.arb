@@ -18,8 +18,18 @@
     "gp": "GP：",
     "ratio": "指数：",
     "seasonProgress": "赛季进度：",
+    "progress": "进度",
+    "updateTime": "更新时间：",
+    "timeTillReset": "重置倒计时：",
     "wph": "波速：",
-    "unitName": "单位名称",
+    "unitName": "单位 {index} 名称",
+    "@unitName": {
+        "placeholders": {
+            "index": {
+                "type": "int"
+            }
+        }
+    },
     "typeUnitName": "输入单位名称",
     "unitLevel": "单位等级",
     "typeUnitLevel": "输入单位等级",

@@ -212,6 +212,24 @@ abstract class AppLocalizations {
   /// **'Season Progress: '**
   String get seasonProgress;
 
+  /// No description provided for @progress.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progress;
+
+  /// No description provided for @updateTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Time: '**
+  String get updateTime;
+
+  /// No description provided for @timeTillReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Till Reset: '**
+  String get timeTillReset;
+
   /// No description provided for @wph.
   ///
   /// In en, this message translates to:
@@ -221,8 +239,8 @@ abstract class AppLocalizations {
   /// No description provided for @unitName.
   ///
   /// In en, this message translates to:
-  /// **'Unit Name'**
-  String get unitName;
+  /// **'Unit {index} Name'**
+  String unitName(int index);
 
   /// No description provided for @typeUnitName.
   ///
