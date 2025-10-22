@@ -160,7 +160,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     applicationName: AppLocalizations.of(context)!.appName,
                     applicationVersion: AppLocalizations.of(
                       context,
-                    )!.appVersion('1.0.0'),
+                    )!.appVersion('1.0.1'),
                     applicationIcon: const Icon(Icons.calculate),
                     applicationLegalese: AppLocalizations.of(
                       context,
