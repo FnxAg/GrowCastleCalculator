@@ -212,6 +212,18 @@ abstract class AppLocalizations {
   /// **'Season Progress: '**
   String get seasonProgress;
 
+  /// No description provided for @hellModeSeasonProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Hell Mode Progress: '**
+  String get hellModeSeasonProgress;
+
+  /// No description provided for @seasonalColonyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasonal Colony Progress: '**
+  String get seasonalColonyProgress;
+
   /// No description provided for @progress.
   ///
   /// In en, this message translates to:

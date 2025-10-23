@@ -5,12 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-
-import 'pages/calculator_page.dart';
-import 'pages/settings_page.dart';
-import 'pages/tool_page.dart';
-import 'enums/locale_option.dart';
-import 'enums/theme_option.dart';
+import 'package:grow_castle_calculator/pages/calculator_page.dart';
+import 'package:grow_castle_calculator/pages/settings_page.dart';
+import 'package:grow_castle_calculator/pages/tool_page.dart';
+import 'package:grow_castle_calculator/enums/locale_option.dart';
+import 'package:grow_castle_calculator/enums/theme_option.dart';
 
 int localeChoice = 0;
 int themeChoice = 0;

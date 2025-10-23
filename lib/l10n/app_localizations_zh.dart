@@ -66,6 +66,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seasonProgress => '赛季进度：';
 
   @override
+  String get hellModeSeasonProgress => '无尽赛季进度：';
+
+  @override
+  String get seasonalColonyProgress => '赛季殖民地进度：';
+
+  @override
   String get progress => '进度';
 
   @override

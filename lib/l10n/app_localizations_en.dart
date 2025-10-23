@@ -66,6 +66,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seasonProgress => 'Season Progress: ';
 
   @override
+  String get hellModeSeasonProgress => 'Hell Mode Progress: ';
+
+  @override
+  String get seasonalColonyProgress => 'Seasonal Colony Progress: ';
+
+  @override
   String get progress => 'Progress';
 
   @override

@@ -2,10 +2,95 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../l10n/app_localizations.dart';
+import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 
 class CalculatorPage extends StatefulWidget {
   const CalculatorPage({super.key});
+  static const seasonHours = 120;
+  static const hellModeSeasonHours = 168;
+  static const seasonalColonyHours = 240;
+
+  static List<int> waveValue = List.generate(
+    2,
+    (index) => 1000000 - index * 960000,
+  );
+
+  static double heroLevelSpendGold(int level) {
+    if (level <= 0) return 0;
+
+    const thresholds = [
+      10000,
+      5000,
+      200,
+      180,
+      160,
+      140,
+      120,
+      100,
+      80,
+      60,
+      40,
+      20,
+      1,
+    ];
+    const baseGold = [
+      187458432500,
+      37468432500,
+      35632500,
+      26157500,
+      18530000,
+      12530000,
+      7997500,
+      4712500,
+      2475000,
+      1085000,
+      342500,
+      47500,
+      0,
+    ];
+    const baseMultiplier = [
+      50000000,
+      20000000,
+      600000,
+      450000,
+      360000,
+      280000,
+      210000,
+      150000,
+      100000,
+      60000,
+      30000,
+      10000,
+      250,
+    ];
+    const increment = [
+      5000,
+      4000,
+      3000,
+      2500,
+      2250,
+      2000,
+      1750,
+      1500,
+      1250,
+      1000,
+      750,
+      500,
+      250,
+    ];
+
+    for (int i = 0; i < thresholds.length; i++) {
+      if (level > thresholds[i]) {
+        final diff = level - thresholds[i];
+        return ((baseMultiplier[i] * 2 + increment[i] * (diff - 1)) /
+                2 *
+                diff) +
+            baseGold[i];
+      }
+    }
+
+    return 0;
+  }
 
   @override
   State<CalculatorPage> createState() => _CalculatorPageState();
@@ -39,84 +124,8 @@ String _decreaseNumSize(double gold) {
   return '${value.toStringAsFixed(0)} ${suffixes[index]}';
 }
 
-double _heroLevelSpendGold(int level) {
-  if (level <= 0) return 0;
-
-  const thresholds = [
-    10000,
-    5000,
-    200,
-    180,
-    160,
-    140,
-    120,
-    100,
-    80,
-    60,
-    40,
-    20,
-    1,
-  ];
-  const baseGold = [
-    187458432500,
-    37468432500,
-    35632500,
-    26157500,
-    18530000,
-    12530000,
-    7997500,
-    4712500,
-    2475000,
-    1085000,
-    342500,
-    47500,
-    0,
-  ];
-  const baseMultiplier = [
-    50000000,
-    20000000,
-    600000,
-    450000,
-    360000,
-    280000,
-    210000,
-    150000,
-    100000,
-    60000,
-    30000,
-    10000,
-    250,
-  ];
-  const increment = [
-    5000,
-    4000,
-    3000,
-    2500,
-    2250,
-    2000,
-    1750,
-    1500,
-    1250,
-    1000,
-    750,
-    500,
-    250,
-  ];
-
-  for (int i = 0; i < thresholds.length; i++) {
-    if (level > thresholds[i]) {
-      final diff = level - thresholds[i];
-      return ((baseMultiplier[i] * 2 + increment[i] * (diff - 1)) / 2 * diff) +
-          baseGold[i];
-    }
-  }
-
-  return 0;
-}
-
 class _CalculatorPageState extends State<CalculatorPage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  List<int> _waveValue = List.generate(2, (index) => 1000000 - index * 960000);
   List<String> _targetName = List.filled(_maxFormLimit - _defaultForm, '');
   List<int> _targetLevel = List.filled(_maxFormLimit, 10000);
   List<bool> _targetCheckbox = List.filled(_maxFormLimit, true);
@@ -126,7 +135,7 @@ class _CalculatorPageState extends State<CalculatorPage>
     } else if (index == 1) {
       return _targetLevel[1] * _targetLevel[1] * 500;
     } else {
-      return _heroLevelSpendGold(_targetLevel[index]);
+      return CalculatorPage.heroLevelSpendGold(_targetLevel[index]);
     }
   });
   List<String> get _targetGoldString => List.generate(_maxFormLimit, (index) {
@@ -159,7 +168,7 @@ class _CalculatorPageState extends State<CalculatorPage>
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _dynamicFormNum = prefs.getInt('dynamicFormNum') ?? 7;
-      _waveValue =
+      CalculatorPage.waveValue =
           prefs.getStringList('waveValue')?.map(int.parse).toList() ??
           [1000000, 40000];
       _targetName =
@@ -172,7 +181,7 @@ class _CalculatorPageState extends State<CalculatorPage>
           prefs.getStringList('targetCheckbox')?.map(bool.parse).toList() ??
           List.filled(_maxFormLimit, true);
       for (int i = 0; i < _waveValueControllers.length; i++) {
-        _waveValueControllers[i].text = _waveValue[i].toString();
+        _waveValueControllers[i].text = CalculatorPage.waveValue[i].toString();
       }
       for (int i = 0; i < _maxFormLimit; i++) {
         _targetLevelControllers[i].text = _targetLevel[i].toString();
@@ -188,7 +197,7 @@ class _CalculatorPageState extends State<CalculatorPage>
     prefs.setInt('dynamicFormNum', _dynamicFormNum);
     prefs.setStringList(
       'waveValue',
-      _waveValue.map((e) => e.toString()).toList(),
+      CalculatorPage.waveValue.map((e) => e.toString()).toList(),
     );
     prefs.setStringList('targetName', _targetName);
     prefs.setStringList(
@@ -289,7 +298,18 @@ class _CalculatorPageState extends State<CalculatorPage>
         now.millisecondsSinceEpoch % 432000000 - 312900000 > 0
         ? now.millisecondsSinceEpoch % 432000000 - 312900000
         : now.millisecondsSinceEpoch % 432000000 + 119100000;
+    int hellModePassedMilliseconds =
+        now.millisecondsSinceEpoch % 604800000 - 310800000 > 0
+        ? now.millisecondsSinceEpoch % 604800000 - 310800000
+        : now.millisecondsSinceEpoch % 604800000 + 294000000;
+    int seasonalColonyPassedMilliseconds =
+        now.millisecondsSinceEpoch % 864000000 - 312600000 > 0
+        ? now.millisecondsSinceEpoch % 864000000 - 312600000
+        : now.millisecondsSinceEpoch % 864000000 + 551400000;
     double seasonProgress = seasonPassedMilliseconds / 432000000;
+    double hellModeProgress = hellModePassedMilliseconds / 604800000;
+    double seasonalColonyProgress =
+        seasonalColonyPassedMilliseconds / 864000000;
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.calculator),
@@ -311,17 +331,160 @@ class _CalculatorPageState extends State<CalculatorPage>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  '${AppLocalizations.of(context)!.seasonProgress}${(seasonProgress * 100).toStringAsFixed(2)}%',
-                                  textAlign: TextAlign.left,
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.seasonProgress,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      '${(seasonProgress * 100).toStringAsFixed(2)}%',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  '${AppLocalizations.of(context)!.updateTime}${DateTime.fromMillisecondsSinceEpoch((now.millisecondsSinceEpoch - seasonPassedMilliseconds + 432000000).toInt()).toLocal().toString().split(".")[0]}',
-                                  textAlign: TextAlign.left,
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.updateTime,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                        (now.millisecondsSinceEpoch -
+                                                seasonPassedMilliseconds +
+                                                432000000)
+                                            .toInt(),
+                                      ).toLocal().toString().split(".")[0],
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  '${AppLocalizations.of(context)!.timeTillReset}${(120 * (1 - seasonProgress)).toStringAsFixed(2)}h',
-                                  textAlign: TextAlign.left,
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.timeTillReset,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      '${(CalculatorPage.seasonHours * (1 - seasonProgress)).toStringAsFixed(2)}h',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                                Text('\n'),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.hellModeSeasonProgress,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      '${(hellModeProgress * 100).toStringAsFixed(2)}%',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.updateTime,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                        (now.millisecondsSinceEpoch -
+                                                hellModePassedMilliseconds +
+                                                604800000)
+                                            .toInt(),
+                                      ).toLocal().toString().split(".")[0],
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.timeTillReset,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      '${(CalculatorPage.hellModeSeasonHours * (1 - hellModeProgress)).toStringAsFixed(2)}h',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                                Text('\n'),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.seasonalColonyProgress,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      '${(seasonalColonyProgress * 100).toStringAsFixed(2)}%',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.updateTime,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                        (now.millisecondsSinceEpoch -
+                                                seasonalColonyPassedMilliseconds +
+                                                864000000)
+                                            .toInt(),
+                                      ).toLocal().toString().split(".")[0],
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.timeTillReset,
+                                      textAlign: TextAlign.left,
+                                    ),
+                                    Text(
+                                      '${(CalculatorPage.seasonalColonyHours * (1 - seasonalColonyProgress)).toStringAsFixed(2)}h',
+                                      textAlign: TextAlign.right,
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -374,7 +537,9 @@ class _CalculatorPageState extends State<CalculatorPage>
                     ),
                     onChanged: (value) {
                       setState(() {
-                        _waveValue[0] = _convertStringToInt(value);
+                        CalculatorPage.waveValue[0] = _convertStringToInt(
+                          value,
+                        );
                       });
                     },
                   ),
@@ -396,7 +561,9 @@ class _CalculatorPageState extends State<CalculatorPage>
                     ),
                     onChanged: (value) {
                       setState(() {
-                        _waveValue[1] = _convertStringToInt(value);
+                        CalculatorPage.waveValue[1] = _convertStringToInt(
+                          value,
+                        );
                       });
                     },
                   ),
@@ -412,9 +579,9 @@ class _CalculatorPageState extends State<CalculatorPage>
                 ),
                 Text(
                   AppLocalizations.of(context)!.wph +
-                      (_waveValue[1] / (120 * seasonProgress)).toStringAsFixed(
-                        2,
-                      ),
+                      (CalculatorPage.waveValue[1] /
+                              (CalculatorPage.seasonHours * seasonProgress))
+                          .toStringAsFixed(2),
                 ),
               ],
             ),
@@ -426,14 +593,16 @@ class _CalculatorPageState extends State<CalculatorPage>
                   AppLocalizations.of(context)!.gp +
                       (_totalGold /
                               (0.5 *
-                                  (310 + _waveValue[0] * 310) *
-                                  _waveValue[0]) *
+                                  (310 + CalculatorPage.waveValue[0] * 310) *
+                                  CalculatorPage.waveValue[0]) *
                               100)
                           .toStringAsFixed(2),
                 ),
                 Text(
                   AppLocalizations.of(context)!.ratio +
-                      (_totalGold / (_waveValue[0] * _waveValue[0]))
+                      (_totalGold /
+                              (CalculatorPage.waveValue[0] *
+                                  CalculatorPage.waveValue[0]))
                           .toStringAsFixed(2),
                 ),
               ],
@@ -521,11 +690,13 @@ class _CalculatorPageState extends State<CalculatorPage>
                               '${_targetCheckbox[index] ? (_targetGold[index] / _totalGold * 100).toStringAsFixed(2) : 0.toStringAsFixed(2)}%',
                             ),
                             Text(
-                              (_targetLevel[index] / _waveValue[0])
+                              (_targetLevel[index] /
+                                      CalculatorPage.waveValue[0])
                                   .toStringAsFixed(3),
                             ),
                             Text(
-                              (_waveValue[0] / _targetLevel[index])
+                              (CalculatorPage.waveValue[0] /
+                                      _targetLevel[index])
                                   .toStringAsFixed(2),
                             ),
                           ],

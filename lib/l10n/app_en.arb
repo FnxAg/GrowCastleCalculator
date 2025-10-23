@@ -18,6 +18,8 @@
     "gp": "GP: ",
     "ratio": "Ratio: ",
     "seasonProgress": "Season Progress: ",
+    "hellModeSeasonProgress": "Hell Mode Progress: ",
+    "seasonalColonyProgress": "Seasonal Colony Progress: ",
     "progress": "Progress",
     "updateTime": "Update Time: ",
     "timeTillReset": "Time Till Reset: ",

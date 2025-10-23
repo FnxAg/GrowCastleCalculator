@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:grow_castle_calculator/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator/main.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-import '../enums/locale_option.dart';
-import '../enums/theme_option.dart';
+import 'package:grow_castle_calculator/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator/main.dart';
+import 'package:grow_castle_calculator/enums/locale_option.dart';
+import 'package:grow_castle_calculator/enums/theme_option.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
