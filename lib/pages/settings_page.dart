@@ -261,21 +261,39 @@ class _SettingsPageState extends State<SettingsPage> {
               onPressed: () => Navigator.of(context).pop(0),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Text(AppLocalizations.of(context)!.systemDefault),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(AppLocalizations.of(context)!.systemDefault),
+                    localeChoice == 0 ? const Icon(Icons.check) : const SizedBox(),
+                  ],
+                ),
               ),
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.of(context).pop(1),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Text(AppLocalizations.of(context)!.zh_CN_withCode),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(AppLocalizations.of(context)!.zh_CN_withCode),
+                    localeChoice == 1 ? const Icon(Icons.check) : const SizedBox(),
+                  ],
+                ),
               ),
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.of(context).pop(2),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Text(AppLocalizations.of(context)!.en_withCode),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(AppLocalizations.of(context)!.en_withCode),
+                    localeChoice == 2 ? const Icon(Icons.check) : const SizedBox(),
+                  ],
+                ),
               ),
             ),
           ],
@@ -300,21 +318,39 @@ class _SettingsPageState extends State<SettingsPage> {
               onPressed: () => Navigator.of(context).pop(0),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Text(AppLocalizations.of(context)!.systemDefault),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(AppLocalizations.of(context)!.systemDefault),
+                    themeChoice == 0 ? const Icon(Icons.check) : const SizedBox(),
+                  ],
+                ),
               ),
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.of(context).pop(1),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Text(AppLocalizations.of(context)!.lightMode),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(AppLocalizations.of(context)!.lightMode),
+                    themeChoice == 1 ? const Icon(Icons.check) : const SizedBox(),
+                  ],
+                ),
               ),
             ),
             SimpleDialogOption(
               onPressed: () => Navigator.of(context).pop(2),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Text(AppLocalizations.of(context)!.darkMode),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(AppLocalizations.of(context)!.darkMode),
+                    themeChoice == 2 ? const Icon(Icons.check) : const SizedBox(),
+                  ],
+                ),
               ),
             ),
           ],
