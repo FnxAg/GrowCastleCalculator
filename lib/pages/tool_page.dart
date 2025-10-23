@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator/pages/tool_pages/gold_calculator.dart';
 
 class ToolPage extends StatefulWidget {
   const ToolPage({super.key});
@@ -22,21 +23,34 @@ class _ToolPageState extends State<ToolPage> {
         child: ListView(
           shrinkWrap: true,
           children: [
-            // SizedBox(
-            //   width: double.infinity,
-            //   child: ElevatedButton.icon(
-            //     style: ElevatedButton.styleFrom(
-            //       alignment: Alignment.centerLeft,
-            //       padding: const EdgeInsets.symmetric(
-            //         horizontal: 16,
-            //         vertical: 20,
-            //       ),
-            //     ),
-            //     icon: Icon(Icons.build),
-            //     label: Text('Button'),
-            //     onPressed: () {},
-            //   ),
-            // ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
+                ),
+                icon: Icon(Icons.build),
+                label: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Gold Calculator'),
+                    Icon(Icons.keyboard_arrow_right),
+                  ],
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const GoldCalculator(),
+                    ),
+                  );
+                },
+              ),
+            ),
             // SizedBox(height: 8),
             // SizedBox(
             //   width: double.infinity,
