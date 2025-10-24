@@ -36,19 +36,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentWave => 'Current Wave';
 
   @override
-  String get typeCurrentWave => 'Type Current Wave';
+  String get enterCurrentWave => 'Enter Current Wave';
 
   @override
   String get seasonalWave => 'Seasonal Wave';
 
   @override
-  String get typeSeasonalWave => 'Type Seasonal Wave';
+  String get enterSeasonalWave => 'Enter Seasonal Wave';
 
   @override
   String get currentSeasonalWave => 'Current Seasonal Wave';
 
   @override
-  String get typeCurrentSeasonalWave => 'Type Current Seasonal Wave';
+  String get enterCurrentSeasonalWave => 'Enter Current Seasonal Wave';
 
   @override
   String get totalWave => 'Total Wave: ';
@@ -89,13 +89,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get typeUnitName => 'Type Unit Name';
+  String get enterUnitName => 'Enter Unit Name';
 
   @override
   String get unitLevel => 'Unit Level';
 
   @override
-  String get typeUnitLevel => 'Type Unit Level';
+  String get enterUnitLevel => 'Enter Unit Level';
 
   @override
   String get remove => 'Remove';

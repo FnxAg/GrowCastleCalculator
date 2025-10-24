@@ -152,11 +152,11 @@ abstract class AppLocalizations {
   /// **'Current Wave'**
   String get currentWave;
 
-  /// No description provided for @typeCurrentWave.
+  /// No description provided for @enterCurrentWave.
   ///
   /// In en, this message translates to:
-  /// **'Type Current Wave'**
-  String get typeCurrentWave;
+  /// **'Enter Current Wave'**
+  String get enterCurrentWave;
 
   /// No description provided for @seasonalWave.
   ///
@@ -164,11 +164,11 @@ abstract class AppLocalizations {
   /// **'Seasonal Wave'**
   String get seasonalWave;
 
-  /// No description provided for @typeSeasonalWave.
+  /// No description provided for @enterSeasonalWave.
   ///
   /// In en, this message translates to:
-  /// **'Type Seasonal Wave'**
-  String get typeSeasonalWave;
+  /// **'Enter Seasonal Wave'**
+  String get enterSeasonalWave;
 
   /// No description provided for @currentSeasonalWave.
   ///
@@ -176,11 +176,11 @@ abstract class AppLocalizations {
   /// **'Current Seasonal Wave'**
   String get currentSeasonalWave;
 
-  /// No description provided for @typeCurrentSeasonalWave.
+  /// No description provided for @enterCurrentSeasonalWave.
   ///
   /// In en, this message translates to:
-  /// **'Type Current Seasonal Wave'**
-  String get typeCurrentSeasonalWave;
+  /// **'Enter Current Seasonal Wave'**
+  String get enterCurrentSeasonalWave;
 
   /// No description provided for @totalWave.
   ///
@@ -254,11 +254,11 @@ abstract class AppLocalizations {
   /// **'Unit {index} Name'**
   String unitName(int index);
 
-  /// No description provided for @typeUnitName.
+  /// No description provided for @enterUnitName.
   ///
   /// In en, this message translates to:
-  /// **'Type Unit Name'**
-  String get typeUnitName;
+  /// **'Enter Unit Name'**
+  String get enterUnitName;
 
   /// No description provided for @unitLevel.
   ///
@@ -266,11 +266,11 @@ abstract class AppLocalizations {
   /// **'Unit Level'**
   String get unitLevel;
 
-  /// No description provided for @typeUnitLevel.
+  /// No description provided for @enterUnitLevel.
   ///
   /// In en, this message translates to:
-  /// **'Type Unit Level'**
-  String get typeUnitLevel;
+  /// **'Enter Unit Level'**
+  String get enterUnitLevel;
 
   /// No description provided for @remove.
   ///

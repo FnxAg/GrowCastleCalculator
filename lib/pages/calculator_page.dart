@@ -532,7 +532,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     decoration: InputDecoration(
                       labelText: AppLocalizations.of(context)!.currentWave,
-                      hintText: AppLocalizations.of(context)!.typeCurrentWave,
+                      hintText: AppLocalizations.of(context)!.enterCurrentWave,
                       border: const OutlineInputBorder(),
                     ),
                     onChanged: (value) {
@@ -556,7 +556,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                       )!.currentSeasonalWave,
                       hintText: AppLocalizations.of(
                         context,
-                      )!.typeCurrentSeasonalWave,
+                      )!.enterCurrentSeasonalWave,
                       border: const OutlineInputBorder(),
                     ),
                     onChanged: (value) {
@@ -643,7 +643,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                                   )!.unitName(index + 1),
                                   hintText: AppLocalizations.of(
                                     context,
-                                  )!.typeUnitName,
+                                  )!.enterUnitName,
                                   border: const OutlineInputBorder(),
                                 ),
                                 onChanged: (value) {
@@ -667,7 +667,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                                   )!.unitLevel,
                                   hintText: AppLocalizations.of(
                                     context,
-                                  )!.typeUnitLevel,
+                                  )!.enterUnitLevel,
                                   border: const OutlineInputBorder(),
                                 ),
                                 onChanged: (value) {

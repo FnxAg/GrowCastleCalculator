@@ -36,19 +36,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get currentWave => '当前波数';
 
   @override
-  String get typeCurrentWave => '输入当前波数';
+  String get enterCurrentWave => '输入当前波数';
 
   @override
   String get seasonalWave => '赛季波数';
 
   @override
-  String get typeSeasonalWave => '输入赛季波数';
+  String get enterSeasonalWave => '输入赛季波数';
 
   @override
   String get currentSeasonalWave => '当前赛季波数';
 
   @override
-  String get typeCurrentSeasonalWave => '输入当前赛季波数';
+  String get enterCurrentSeasonalWave => '输入当前赛季波数';
 
   @override
   String get totalWave => '总波数：';
@@ -89,13 +89,13 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get typeUnitName => '输入单位名称';
+  String get enterUnitName => '输入单位名称';
 
   @override
   String get unitLevel => '单位等级';
 
   @override
-  String get typeUnitLevel => '输入单位等级';
+  String get enterUnitLevel => '输入单位等级';
 
   @override
   String get remove => '移除';
