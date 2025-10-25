@@ -11,6 +11,9 @@ class GoldCalculator extends StatefulWidget {
 
 class _GoldCalculatorState extends State<GoldCalculator> {
   bool _goldCalculatorWaveBox = true;
+  bool _ironWheel = false;
+  bool _includeGoldenTree = true;
+  bool _includeSeasonalColony = true;
 
   final List<TextEditingController> _goldCalculatorWaveController = [
     TextEditingController(),
@@ -62,19 +65,21 @@ class _GoldCalculatorState extends State<GoldCalculator> {
               children: [
                 Expanded(
                   flex: 1,
-                  child: Tooltip(
-                    message: 'Toggle Wave Value',
-                    child: Checkbox(
-                      value: _goldCalculatorWaveBox,
-                      onChanged: (value) {
-                        setState(() {
-                          _goldCalculatorWaveBox = value!;
-                          if (_goldCalculatorWaveBox) {
-                            _initWaveValue();
-                          }
-                        });
-                      },
-                    ),
+                  child: Column(
+                    children: [
+                      Text('Extend'),
+                      Checkbox(
+                        value: _goldCalculatorWaveBox,
+                        onChanged: (value) {
+                          setState(() {
+                            _goldCalculatorWaveBox = value!;
+                            if (_goldCalculatorWaveBox) {
+                              _initWaveValue();
+                            }
+                          });
+                        },
+                      ),
+                    ],
                   ),
                 ),
                 Expanded(
@@ -156,6 +161,115 @@ class _GoldCalculatorState extends State<GoldCalculator> {
                       hintText: 'Enter Infinite Colony Level',
                       border: const OutlineInputBorder(),
                     ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Extra Colony CD Skill LV',
+                      hintText: 'Enter Skill LV',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Extra Colony Gold Skill LV',
+                      hintText: 'Enter Skill LV',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                Column(
+                  children: [
+                    Text('Iron Wheel'),
+                    Checkbox(
+                      value: _ironWheel,
+                      onChanged: (value) {
+                        setState(() {
+                          _ironWheel = value ?? false;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'GAB Hour/Day',
+                      hintText: 'Enter Hour',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Profit %',
+                      hintText: 'Enter Profit',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'TAB Hour/Day',
+                      hintText: 'Enter Hour',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text('Golden Tree'),
+                      Checkbox(value: _includeGoldenTree, onChanged: (value) {
+                        setState(() {
+                          _includeGoldenTree = value ?? false;
+                        });
+                      }),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text('Seasonal Colony'),
+                      Checkbox(value: _includeSeasonalColony, onChanged: (value) {
+                        setState(() {
+                          _includeSeasonalColony = value ?? false;
+                        });
+                      }),
+                    ],
                   ),
                 ),
               ],
