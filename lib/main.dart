@@ -207,3 +207,25 @@ class FormatterWithMinusAndDot extends TextInputFormatter {
     );
   }
 }
+
+class ExpandedText extends StatelessWidget {
+  const ExpandedText({
+    super.key,
+    required this.name,
+    required this.variable,
+  });
+
+  final String name;
+  final dynamic variable;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(name),
+        Expanded(child: SizedBox()),
+        Text(variable),
+      ],
+    );
+  }
+}
