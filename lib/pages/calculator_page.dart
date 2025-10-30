@@ -97,17 +97,10 @@ class CalculatorPage extends StatefulWidget {
 }
 
 int _convertStringToInt(String value) {
-  if (value.isEmpty) {
-    return 0;
-  }
-  try {
-    return int.parse(value);
-  } catch (e) {
-    return 0;
-  }
+  return int.tryParse(value) ?? 0;
 }
 
-String _decreaseNumSize(double gold) {
+String decreaseNumSize(double gold) {
   const suffixes = ['K', 'M', 'B', 'T', 'Qua', 'Qui', 'Sex', 'Sep'];
   double value = gold;
   int index = -1;
@@ -140,7 +133,7 @@ class _CalculatorPageState extends State<CalculatorPage>
   });
   List<String> get _targetGoldString => List.generate(_maxFormLimit, (index) {
     double gold = _targetGold[index];
-    return _decreaseNumSize(gold);
+    return decreaseNumSize(gold);
   });
 
   late Timer _timer;
@@ -154,7 +147,7 @@ class _CalculatorPageState extends State<CalculatorPage>
       .map((entry) => entry.value)
       .fold<double>(0, (previousValue, element) => previousValue + element);
 
-  String get _totalGoldString => _decreaseNumSize(_totalGold);
+  String get _totalGoldString => decreaseNumSize(_totalGold);
 
   int _dynamicFormNum = 7;
   static const int _minFormLimit = 2;
