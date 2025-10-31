@@ -33,11 +33,11 @@ class _ToolPageState extends State<ToolPage> {
                     vertical: 20,
                   ),
                 ),
-                icon: Icon(Icons.build),
+                icon: Icon(Icons.monetization_on),
                 label: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Gold Calculator'),
+                    Text(AppLocalizations.of(context)!.goldCalculator),
                     Icon(Icons.keyboard_arrow_right),
                   ],
                 ),
@@ -51,40 +51,6 @@ class _ToolPageState extends State<ToolPage> {
                 },
               ),
             ),
-            // SizedBox(height: 8),
-            // SizedBox(
-            //   width: double.infinity,
-            //   child: ElevatedButton.icon(
-            //     style: ElevatedButton.styleFrom(
-            //       alignment: Alignment.centerLeft,
-            //       padding: const EdgeInsets.symmetric(
-            //         horizontal: 16,
-            //         vertical: 20,
-            //       ),
-            //     ),
-            //     icon: Icon(Icons.build),
-            //     label: Text('Button'),
-            //     onPressed: () {},
-            //   ),
-            // ),
-            // SizedBox(height: 8),
-            // SizedBox(
-            //   width: double.infinity,
-            //   child: ElevatedButton.icon(
-            //     style: ElevatedButton.styleFrom(
-            //       alignment: Alignment.centerLeft,
-            //       padding: const EdgeInsets.symmetric(
-            //         horizontal: 16,
-            //         vertical: 20,
-            //       ),
-            //     ),
-            //     icon: Icon(Icons.build),
-            //     label: Text('Button'),
-            //     onPressed: () {},
-            //   ),
-            // ),
-            // SizedBox(height: 8),
-            Center(child: Text(AppLocalizations.of(context)!.todo)),
           ],
         ),
       ),
