@@ -141,6 +141,39 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clearDataFinished => '数据已清除';
 
   @override
+  String get checkForUpdates => '检查更新';
+
+  @override
+  String get checkForUpdateFailed => '检查更新失败';
+
+  @override
+  String get isLatestVersion => '当前已是最新版本';
+
+  @override
+  String get findNewVersion => '发现新版本！';
+
+  @override
+  String get currentVersion => '当前版本：';
+
+  @override
+  String get latestVersion => '最新版本：';
+
+  @override
+  String get updateContent => '更新内容：';
+
+  @override
+  String get fixedKnownIssues => '优化体验，修复已知问题';
+
+  @override
+  String get updateLater => '稍后更新';
+
+  @override
+  String get updateNow => '立即更新';
+
+  @override
+  String get newVersionAvailable => '有新版本可用';
+
+  @override
   String get about => '关于';
 
   @override
@@ -176,4 +209,97 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get en_withCode => 'en\tEnglish';
+
+  @override
+  String get goldCalculator => '收入计算器';
+
+  @override
+  String get inherit => '继承';
+
+  @override
+  String get gabCost => '金挂成本：';
+
+  @override
+  String get goldDay => '每日收入：';
+
+  @override
+  String get gameSpeed => '游戏速度：';
+
+  @override
+  String get enterGameSpeed => '输入游戏速度';
+
+  @override
+  String get jumpAndWave => '单次跳波数';
+
+  @override
+  String get enterWave => '输入波数';
+
+  @override
+  String get waveTime => '单波时间（秒）';
+
+  @override
+  String get enterWaveTime => '输入单波时间（秒）';
+
+  @override
+  String get infiniteColony => '通天塔';
+
+  @override
+  String get icLevel => '通天塔等级';
+
+  @override
+  String get enterLV => '输入等级';
+
+  @override
+  String get ironWheel => '车轮';
+
+  @override
+  String get extraColonyCD => '额外殖民地C';
+
+  @override
+  String get extraColonyGold => '额外殖民地G';
+
+  @override
+  String get secCart => '每车时间：';
+
+  @override
+  String get goldCart => '每车金币：';
+
+  @override
+  String get cartHour => '每小时小推车数量：';
+
+  @override
+  String get icRatio => '通天塔比例：';
+
+  @override
+  String get goldHour => '每小时收入：';
+
+  @override
+  String get goldAutoBattle => '金挂（GAB）';
+
+  @override
+  String get gabHourDay => '每日金挂时间';
+
+  @override
+  String get enterHour => '输入小时数';
+
+  @override
+  String get gabProfit => '金挂收益 %';
+
+  @override
+  String get enterProfit => '输入收益百分比';
+
+  @override
+  String get goldWave => '每波收益：';
+
+  @override
+  String get timeAutoBattle => '时挂（TAB）';
+
+  @override
+  String get tabHourDay => '每日时挂时间';
+
+  @override
+  String get goldenTree => '金币大树';
+
+  @override
+  String get seasonalColony => '赛季殖民地';
 }

@@ -142,6 +142,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clearDataFinished => 'Saved data cleared.';
 
   @override
+  String get checkForUpdates => 'Check for Updates';
+
+  @override
+  String get checkForUpdateFailed => 'Check for Update Failed';
+
+  @override
+  String get isLatestVersion => 'Already the Latest Version';
+
+  @override
+  String get findNewVersion => 'New Version Found!';
+
+  @override
+  String get currentVersion => 'Current Version: ';
+
+  @override
+  String get latestVersion => 'Latest Version: ';
+
+  @override
+  String get updateContent => 'Update Content: ';
+
+  @override
+  String get fixedKnownIssues => 'Optimized experience, fixed known issues';
+
+  @override
+  String get updateLater => 'Update Later';
+
+  @override
+  String get updateNow => 'Update Now';
+
+  @override
+  String get newVersionAvailable => 'New Version Available';
+
+  @override
   String get about => 'About';
 
   @override
@@ -177,4 +210,97 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get en_withCode => 'en\tEnglish';
+
+  @override
+  String get goldCalculator => 'Gold Calculator';
+
+  @override
+  String get inherit => 'Inherit';
+
+  @override
+  String get gabCost => 'GAB Cost: ';
+
+  @override
+  String get goldDay => 'Gold/Day: ';
+
+  @override
+  String get gameSpeed => 'Game Speed: ';
+
+  @override
+  String get enterGameSpeed => 'Enter Game Speed';
+
+  @override
+  String get jumpAndWave => 'Jump + Wave';
+
+  @override
+  String get enterWave => 'Enter Wave';
+
+  @override
+  String get waveTime => 'Wave Time (s)';
+
+  @override
+  String get enterWaveTime => 'Enter Wave Time';
+
+  @override
+  String get infiniteColony => 'Infinite Colony';
+
+  @override
+  String get icLevel => 'IC Level';
+
+  @override
+  String get enterLV => 'Enter Level';
+
+  @override
+  String get ironWheel => 'Iron Wheel';
+
+  @override
+  String get extraColonyCD => 'Colony CD+';
+
+  @override
+  String get extraColonyGold => 'Colony Gold+';
+
+  @override
+  String get secCart => 'Sec/Cart: ';
+
+  @override
+  String get goldCart => 'Gold/Cart: ';
+
+  @override
+  String get cartHour => 'Carts/Hour: ';
+
+  @override
+  String get icRatio => 'IC Ratio: ';
+
+  @override
+  String get goldHour => 'Gold/Hour: ';
+
+  @override
+  String get goldAutoBattle => 'Gold Auto Battle';
+
+  @override
+  String get gabHourDay => 'GAB Hours/Day';
+
+  @override
+  String get enterHour => 'Enter Hours';
+
+  @override
+  String get gabProfit => 'GAB Profit %';
+
+  @override
+  String get enterProfit => 'Enter Profit Percentage';
+
+  @override
+  String get goldWave => 'Gold/Wave: ';
+
+  @override
+  String get timeAutoBattle => 'Time Auto Battle';
+
+  @override
+  String get tabHourDay => 'TAB Hours/Day';
+
+  @override
+  String get goldenTree => 'Golden Tree';
+
+  @override
+  String get seasonalColony => 'Seasonal Colony';
 }

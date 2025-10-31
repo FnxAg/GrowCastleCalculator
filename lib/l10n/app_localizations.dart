@@ -356,6 +356,72 @@ abstract class AppLocalizations {
   /// **'Saved data cleared.'**
   String get clearDataFinished;
 
+  /// No description provided for @checkForUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for Updates'**
+  String get checkForUpdates;
+
+  /// No description provided for @checkForUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Check for Update Failed'**
+  String get checkForUpdateFailed;
+
+  /// No description provided for @isLatestVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Already the Latest Version'**
+  String get isLatestVersion;
+
+  /// No description provided for @findNewVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'New Version Found!'**
+  String get findNewVersion;
+
+  /// No description provided for @currentVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Version: '**
+  String get currentVersion;
+
+  /// No description provided for @latestVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Version: '**
+  String get latestVersion;
+
+  /// No description provided for @updateContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Content: '**
+  String get updateContent;
+
+  /// No description provided for @fixedKnownIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'Optimized experience, fixed known issues'**
+  String get fixedKnownIssues;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Later'**
+  String get updateLater;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Now'**
+  String get updateNow;
+
+  /// No description provided for @newVersionAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'New Version Available'**
+  String get newVersionAvailable;
+
   /// No description provided for @about.
   ///
   /// In en, this message translates to:
@@ -421,6 +487,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'en\tEnglish'**
   String get en_withCode;
+
+  /// No description provided for @goldCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold Calculator'**
+  String get goldCalculator;
+
+  /// No description provided for @inherit.
+  ///
+  /// In en, this message translates to:
+  /// **'Inherit'**
+  String get inherit;
+
+  /// No description provided for @gabCost.
+  ///
+  /// In en, this message translates to:
+  /// **'GAB Cost: '**
+  String get gabCost;
+
+  /// No description provided for @goldDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold/Day: '**
+  String get goldDay;
+
+  /// No description provided for @gameSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Speed: '**
+  String get gameSpeed;
+
+  /// No description provided for @enterGameSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Game Speed'**
+  String get enterGameSpeed;
+
+  /// No description provided for @jumpAndWave.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump + Wave'**
+  String get jumpAndWave;
+
+  /// No description provided for @enterWave.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Wave'**
+  String get enterWave;
+
+  /// No description provided for @waveTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Wave Time (s)'**
+  String get waveTime;
+
+  /// No description provided for @enterWaveTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Wave Time'**
+  String get enterWaveTime;
+
+  /// No description provided for @infiniteColony.
+  ///
+  /// In en, this message translates to:
+  /// **'Infinite Colony'**
+  String get infiniteColony;
+
+  /// No description provided for @icLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'IC Level'**
+  String get icLevel;
+
+  /// No description provided for @enterLV.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Level'**
+  String get enterLV;
+
+  /// No description provided for @ironWheel.
+  ///
+  /// In en, this message translates to:
+  /// **'Iron Wheel'**
+  String get ironWheel;
+
+  /// No description provided for @extraColonyCD.
+  ///
+  /// In en, this message translates to:
+  /// **'Colony CD+'**
+  String get extraColonyCD;
+
+  /// No description provided for @extraColonyGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Colony Gold+'**
+  String get extraColonyGold;
+
+  /// No description provided for @secCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Sec/Cart: '**
+  String get secCart;
+
+  /// No description provided for @goldCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold/Cart: '**
+  String get goldCart;
+
+  /// No description provided for @cartHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Carts/Hour: '**
+  String get cartHour;
+
+  /// No description provided for @icRatio.
+  ///
+  /// In en, this message translates to:
+  /// **'IC Ratio: '**
+  String get icRatio;
+
+  /// No description provided for @goldHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold/Hour: '**
+  String get goldHour;
+
+  /// No description provided for @goldAutoBattle.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold Auto Battle'**
+  String get goldAutoBattle;
+
+  /// No description provided for @gabHourDay.
+  ///
+  /// In en, this message translates to:
+  /// **'GAB Hours/Day'**
+  String get gabHourDay;
+
+  /// No description provided for @enterHour.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Hours'**
+  String get enterHour;
+
+  /// No description provided for @gabProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'GAB Profit %'**
+  String get gabProfit;
+
+  /// No description provided for @enterProfit.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Profit Percentage'**
+  String get enterProfit;
+
+  /// No description provided for @goldWave.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold/Wave: '**
+  String get goldWave;
+
+  /// No description provided for @timeAutoBattle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Auto Battle'**
+  String get timeAutoBattle;
+
+  /// No description provided for @tabHourDay.
+  ///
+  /// In en, this message translates to:
+  /// **'TAB Hours/Day'**
+  String get tabHourDay;
+
+  /// No description provided for @goldenTree.
+  ///
+  /// In en, this message translates to:
+  /// **'Golden Tree'**
+  String get goldenTree;
+
+  /// No description provided for @seasonalColony.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasonal Colony'**
+  String get seasonalColony;
 }
 
 class _AppLocalizationsDelegate
