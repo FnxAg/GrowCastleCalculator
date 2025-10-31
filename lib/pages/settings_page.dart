@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:grow_castle_calculator/pages/update_checker_page/update_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -151,15 +152,37 @@ class _SettingsPageState extends State<SettingsPage> {
                     vertical: 20,
                   ),
                 ),
+                icon: _isChecking
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.system_update),
+                label: Text(AppLocalizations.of(context)!.checkForUpdates),
+                onPressed: _isChecking ? null : _checkUpdate,
+              ),
+            ),
+            SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
+                ),
                 icon: const Icon(Icons.info),
                 label: Text(AppLocalizations.of(context)!.about),
-                onPressed: () {
+                onPressed: () async {
                   showAboutDialog(
                     context: context,
                     applicationName: AppLocalizations.of(context)!.appName,
                     applicationVersion: AppLocalizations.of(
                       context,
-                    )!.appVersion('1.0.1'),
+                    )!.appVersion(await UpdateChecker.getAppVersion()),
                     applicationIcon: const Icon(Icons.calculate),
                     applicationLegalese: AppLocalizations.of(
                       context,
@@ -388,5 +411,69 @@ class _SettingsPageState extends State<SettingsPage> {
     prefs.remove('targetName');
     prefs.remove('targetLevel');
     prefs.remove('targetCheckbox');
+    prefs.remove('gc_waveValue');
+    prefs.remove('gc_formField');
+    prefs.remove('gc_checkboxForm');
+    prefs.remove('gc_isExpanded');
+  }
+  
+  bool _isChecking = false;
+
+  void _checkUpdate() async {
+    setState(() => _isChecking = true);
+    final updateInfo = await UpdateChecker.checkForUpdate();
+    setState(() => _isChecking = false);
+
+    if (updateInfo == null) {
+      _showToast(AppLocalizations.of(context)!.checkForUpdateFailed);
+      return;
+    }
+
+    if (updateInfo.hasUpdate) {
+      _showUpdateDialog(updateInfo);
+    } else {
+      _showToast(AppLocalizations.of(context)!.isLatestVersion);
+    }
+  }
+
+  void _showUpdateDialog(UpdateInfo info) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.findNewVersion),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("${AppLocalizations.of(context)!.currentVersion}${info.localVersion}"),
+            Text("${AppLocalizations.of(context)!.latestVersion}${info.latestVersion}"),
+            const SizedBox(height: 12),
+            Text(AppLocalizations.of(context)!.updateContent),
+            const SizedBox(height: 8),
+            Text(info.updateContent ?? AppLocalizations.of(context)!.fixedKnownIssues),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.updateLater),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              UpdateChecker.openDownloadUrl(info.downloadUrl!);
+            },
+            child: Text(AppLocalizations.of(context)!.updateNow),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showToast(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 }
