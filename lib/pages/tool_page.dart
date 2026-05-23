@@ -18,42 +18,23 @@ class _ToolPageState extends State<ToolPage> {
         elevation: 1,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView(
-          shrinkWrap: true,
+      body: ListView(
           children: [
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 20,
+            ListTile(
+              leading: const Icon(Icons.monetization_on),
+              title: Text(AppLocalizations.of(context)!.goldCalculator),
+              trailing: const Icon(Icons.keyboard_arrow_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GoldCalculator(),
                   ),
-                ),
-                icon: Icon(Icons.monetization_on),
-                label: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.goldCalculator),
-                    Icon(Icons.keyboard_arrow_right),
-                  ],
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const GoldCalculator(),
-                    ),
-                  );
-                },
-              ),
+                );
+              },
             ),
           ],
         ),
-      ),
     );
   }
 }

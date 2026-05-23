@@ -31,240 +31,198 @@ class _SettingsPageState extends State<SettingsPage> {
         elevation: 1,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ListView(
-          shrinkWrap: true,
+      body: ListView(
           children: [
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 20,
-                  ),
-                ),
-                icon: const Icon(Icons.language),
-                label: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.language),
-                    Text(
-                      LocaleOption.fromLocaleCode2LocaleOption(
-                        localeChoice,
-                      ).localeString,
+            ListTile(
+              leading: const Icon(Icons.language),
+              title: Text(AppLocalizations.of(context)!.language),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    LocaleOption.fromLocaleCode2LocaleOption(
+                      localeChoice,
+                    ).localeString,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                  ],
-                ),
-                onPressed: () async {
-                  final choice = await _changeLanguageDialog();
-                  choice == null
-                      ? null
-                      : setState(() {
-                          Get.updateLocale(
-                            LocaleOption.values[choice].localeType,
-                          );
-                          localeChoice =
-                              LocaleOption.values[choice].localeCode;
-                          _saveLocale();
-                        });
-                },
-              ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 20,
                   ),
-                ),
-                icon: const Icon(Icons.color_lens),
-                label: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.themeMode),
-                    Text(
-                      ThemeOption.fromThemeCode2ThemeOption(
-                        themeChoice,
-                      ).themeString,
+                  const Icon(Icons.keyboard_arrow_right),
+                ],
+              ),
+              onTap: () async {
+                final choice = await _changeLanguageDialog();
+                choice == null
+                    ? null
+                    : setState(() {
+                        Get.updateLocale(
+                          LocaleOption.values[choice].localeType,
+                        );
+                        localeChoice =
+                            LocaleOption.values[choice].localeCode;
+                        _saveLocale();
+                      });
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.color_lens),
+              title: Text(AppLocalizations.of(context)!.themeMode),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    ThemeOption.fromThemeCode2ThemeOption(
+                      themeChoice,
+                    ).themeString,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                  ],
-                ),
-                onPressed: () async {
-                  final choice = await _changeThemeModeDialog();
-                  choice == null
-                      ? null
-                      : setState(() {
-                          themeChoice =
-                              ThemeOption.values[choice].themeCode;
-                          themeProvider.setThemeMode(
-                            ThemeOption.values[choice].themeMode,
-                          );
-                          _saveTheme();
-                        });
-                },
-              ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 20,
                   ),
-                ),
-                icon: const Icon(Icons.delete_forever),
-                label: Text(AppLocalizations.of(context)!.clearSavedData),
-                onPressed: () async {
-                  final confirm = await _clearDataDialogConfirmation();
-                  if (confirm == true) {
-                    clearData();
-                    ScaffoldMessenger.of(context)
-                      ..removeCurrentSnackBar()
-                      ..showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            AppLocalizations.of(context)!.clearDataFinished,
+                  const Icon(Icons.keyboard_arrow_right),
+                ],
+              ),
+              onTap: () async {
+                final choice = await _changeThemeModeDialog();
+                choice == null
+                    ? null
+                    : setState(() {
+                        themeChoice =
+                            ThemeOption.values[choice].themeCode;
+                        themeProvider.setThemeMode(
+                          ThemeOption.values[choice].themeMode,
+                        );
+                        _saveTheme();
+                      });
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.delete_forever),
+              title: Text(AppLocalizations.of(context)!.clearSavedData),
+              trailing: const Icon(Icons.keyboard_arrow_right),
+              onTap: () async {
+                final confirm = await _clearDataDialogConfirmation();
+                if (confirm == true) {
+                  clearData();
+                  ScaffoldMessenger.of(context)
+                    ..removeCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          AppLocalizations.of(context)!.clearDataFinished,
+                        ),
+                      ),
+                    );
+                }
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: _isChecking
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.system_update),
+              title: Text(AppLocalizations.of(context)!.checkForUpdates),
+              trailing: const Icon(Icons.keyboard_arrow_right),
+              enabled: !_isChecking,
+              onTap: _isChecking ? null : _checkUpdate,
+            ),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.info),
+              title: Text(AppLocalizations.of(context)!.about),
+              trailing: const Icon(Icons.keyboard_arrow_right),
+              onTap: () async {
+                showAboutDialog(
+                  context: context,
+                  applicationName: AppLocalizations.of(context)!.appName,
+                  applicationVersion: AppLocalizations.of(
+                    context,
+                  )!.appVersion(await UpdateChecker.getAppVersion()),
+                  applicationIcon: const Icon(Icons.calculate),
+                  applicationLegalese: AppLocalizations.of(
+                    context,
+                  )!.developer,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          icon: const Icon(Icons.link),
+                          onPressed: () async {
+                            final url = Uri.parse(
+                              AppLocalizations.of(
+                                context,
+                              )!.repositoryUrl,
+                            );
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                ..removeCurrentSnackBar()
+                                ..showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.cannotLaunchURL(url.toString()),
+                                    ),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                );
+                            }
+                          },
+                          label: Text(
+                            AppLocalizations.of(
+                              context,
+                            )!.github,
                           ),
                         ),
-                      );
-                  }
-                },
-              ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 20,
-                  ),
-                ),
-                icon: _isChecking
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.system_update),
-                label: Text(AppLocalizations.of(context)!.checkForUpdates),
-                onPressed: _isChecking ? null : _checkUpdate,
-              ),
-            ),
-            SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 20,
-                  ),
-                ),
-                icon: const Icon(Icons.info),
-                label: Text(AppLocalizations.of(context)!.about),
-                onPressed: () async {
-                  showAboutDialog(
-                    context: context,
-                    applicationName: AppLocalizations.of(context)!.appName,
-                    applicationVersion: AppLocalizations.of(
-                      context,
-                    )!.appVersion(await UpdateChecker.getAppVersion()),
-                    applicationIcon: const Icon(Icons.calculate),
-                    applicationLegalese: AppLocalizations.of(
-                      context,
-                    )!.developer,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TextButton.icon(
-                            icon: const Icon(Icons.link),
-                            onPressed: () async {
-                              final url = Uri.parse(
-                                AppLocalizations.of(
-                                  context,
-                                )!.repositoryUrl,
-                              );
-                              if (await canLaunchUrl(url)) {
-                                await launchUrl(url);
-                              } else {
-                                ScaffoldMessenger.of(context)
-                                  ..removeCurrentSnackBar()
-                                  ..showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.cannotLaunchURL(url.toString()),
-                                      ),
-                                      backgroundColor:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  );
-                              }
-                            },
-                            label: Text(
+                        TextButton.icon(
+                          icon: const Icon(Icons.link),
+                          onPressed: () async {
+                            final url = Uri.parse(
                               AppLocalizations.of(
                                 context,
-                              )!.github,
-                            ),
-                          ),
-                          TextButton.icon(
-                            icon: const Icon(Icons.link),
-                            onPressed: () async {
-                              final url = Uri.parse(
-                                AppLocalizations.of(
-                                  context,
-                                )!.developerBilibiliUrl,
-                              );
-                              if (await canLaunchUrl(url)) {
-                                await launchUrl(url);
-                              } else {
-                                ScaffoldMessenger.of(context)
-                                  ..removeCurrentSnackBar()
-                                  ..showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        AppLocalizations.of(
-                                          context,
-                                        )!.cannotLaunchURL(url.toString()),
-                                      ),
-                                      backgroundColor:
-                                          Theme.of(context).colorScheme.primary,
+                              )!.developerBilibiliUrl,
+                            );
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url);
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                ..removeCurrentSnackBar()
+                                ..showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.cannotLaunchURL(url.toString()),
                                     ),
-                                  );
-                              }
-                            },
-                            label: Text(
-                              AppLocalizations.of(
-                                context,
-                              )!.bilibili,
-                            ),
+                                    backgroundColor:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                );
+                            }
+                          },
+                          label: Text(
+                            AppLocalizations.of(
+                              context,
+                            )!.bilibili,
                           ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
-              ),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
-      ),
     );
   }
 
