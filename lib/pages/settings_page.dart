@@ -64,7 +64,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       });
               },
             ),
-            const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.color_lens),
               title: Text(AppLocalizations.of(context)!.themeMode),
@@ -96,7 +95,6 @@ class _SettingsPageState extends State<SettingsPage> {
                       });
               },
             ),
-            const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.delete_forever),
               title: Text(AppLocalizations.of(context)!.clearSavedData),
@@ -117,7 +115,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
               },
             ),
-            const Divider(height: 1),
             ListTile(
               leading: _isChecking
                   ? const SizedBox(
@@ -131,7 +128,6 @@ class _SettingsPageState extends State<SettingsPage> {
               enabled: !_isChecking,
               onTap: _isChecking ? null : _checkUpdate,
             ),
-            const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.info),
               title: Text(AppLocalizations.of(context)!.about),
