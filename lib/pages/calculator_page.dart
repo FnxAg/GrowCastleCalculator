@@ -340,6 +340,7 @@ class _CalculatorPageState extends State<CalculatorPage>
               children: [
                 InkWell(
                   onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
                     showDialog(
                       context: context,
                       builder: (context) {

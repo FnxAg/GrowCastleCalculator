@@ -138,6 +138,7 @@ class _HomePageState extends State<HomePage> {
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
+          FocusManager.instance.primaryFocus?.unfocus();
           _pageController.animateToPage(
             index,
             duration: const Duration(milliseconds: 150),
