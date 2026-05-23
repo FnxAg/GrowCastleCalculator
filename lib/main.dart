@@ -49,45 +49,22 @@ Future<void> main() async {
   );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   static const defaultColorSeed = Colors.blueAccent;
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return DynamicColorBuilder(
       builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-        ColorScheme lightColorScheme;
-        ColorScheme darkColorScheme;
-
-        if (lightDynamic != null && darkDynamic != null) {
-          lightColorScheme = lightDynamic.harmonized();
-          darkColorScheme = darkDynamic.harmonized();
-        } else {
-          lightColorScheme = ColorScheme.fromSeed(
-            seedColor: MyApp.defaultColorSeed,
-          );
-          darkColorScheme = ColorScheme.fromSeed(
-            seedColor: MyApp.defaultColorSeed,
-            brightness: Brightness.dark,
-          );
-        }
+        final lightColorScheme = lightDynamic?.harmonized() ??
+            ColorScheme.fromSeed(seedColor: defaultColorSeed);
+        final darkColorScheme = darkDynamic?.harmonized() ??
+            ColorScheme.fromSeed(
+              seedColor: defaultColorSeed,
+              brightness: Brightness.dark,
+            );
 
         return Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) => GetMaterialApp(
@@ -105,7 +82,7 @@ class _MyAppState extends State<MyApp> {
               colorScheme: darkColorScheme,
             ),
             themeMode: themeProvider.themeMode,
-            home: HomePage(),
+            home: const HomePage(),
           ),
         );
       },
@@ -124,7 +101,7 @@ class _HomePageState extends State<HomePage> {
   int _pageIndex = 0;
   final PageController _pageController = PageController(initialPage: 0);
 
-  final List<Widget> _pages = [CalculatorPage(), ToolPage(), SettingsPage()];
+  final List<Widget> _pages = const [CalculatorPage(), ToolPage(), SettingsPage()];
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +109,7 @@ class _HomePageState extends State<HomePage> {
       body: PageView(
         controller: _pageController,
         onPageChanged: (index) {
+          FocusScope.of(context).unfocus();
           setState(() {
             _pageIndex = index;
           });

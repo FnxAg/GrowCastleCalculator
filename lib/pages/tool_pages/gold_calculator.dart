@@ -103,8 +103,10 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached ||
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.resumed) {
+        state == AppLifecycleState.inactive) {
+      FocusScope.of(context).unfocus();
+      _saveCalculatorData();
+    } else if (state == AppLifecycleState.resumed) {
       _saveCalculatorData();
     }
   }
@@ -132,76 +134,38 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
 
   @override
   Widget build(BuildContext context) {
-    double wph = _convertStringToDouble(_formFieldControllers[2].text) == 0
-        ? 0
-        : (3600 /
-              _convertStringToDouble(_formFieldControllers[2].text) *
-              _convertStringToDouble(_formFieldControllers[1].text));
-    var goldPerCart =
-        (_convertStringToInt(_formFieldControllers[3].text) * 5400 + 1374406) /
-        1.2 *
-        (1.2 + 0.01 * _convertStringToInt(_formFieldControllers[5].text));
-    var secondsPerCart =
-        (60 /
-        ((_convertStringToInt(_formFieldControllers[4].text) * 0.005 + 1.1) +
-            (_checkboxForm[1] ? 0.15 : 0)));
-    double icRatio = _convertStringToDouble(_formFieldControllers[0].text) == 0
-        ? 0
-        : (_convertStringToInt(_formFieldControllers[3].text) *
-              1000 /
-              _convertStringToInt(_waveValueControllers[0].text));
-    double cartsPerHour =
-        _convertStringToDouble(_formFieldControllers[2].text) == 0
-        ? 0
-        : (((_convertStringToDouble(_formFieldControllers[2].text) - 1.5) *
-                      _convertStringToDouble(_formFieldControllers[0].text) +
-                  1.5) *
-              3600 /
-              _convertStringToDouble(_formFieldControllers[2].text) /
-              secondsPerCart);
-    var adGold = _convertStringToInt(_waveValueControllers[0].text) * 2160;
-    var gabCost =
-        456 * _convertStringToInt(_waveValueControllers[0].text) - 29264;
-    var gabBenefitGoldPerWave =
-        gabCost * _convertStringToDouble(_formFieldControllers[7].text) * 0.01;
-    double gabBenefitGoldPerHour =
-        _convertStringToDouble(_formFieldControllers[2].text) == 0
-        ? 0
-        : 3600 /
-              _convertStringToDouble(_formFieldControllers[2].text) *
-              gabBenefitGoldPerWave;
-    var tabGoldPerWave =
-        gabCost *
-        (1 + _convertStringToDouble(_formFieldControllers[7].text) * 0.01);
-    double tabGoldPerHour =
-        _convertStringToDouble(_formFieldControllers[2].text) == 0
-        ? 0
-        : tabGoldPerWave *
-              (3600 / _convertStringToDouble(_formFieldControllers[2].text));
-    var tabGoldPerDay =
-        tabGoldPerHour * _convertStringToDouble(_formFieldControllers[8].text);
-    var gabBenefitGoldPerDay =
-        gabBenefitGoldPerHour *
-        _convertStringToDouble(_formFieldControllers[6].text);
-    double goldenTreeGoldPerHour =
-        _convertStringToDouble(_formFieldControllers[2].text) == 0
-        ? 0
-        : 48 /
-              456 *
-              gabCost *
-              3600 /
-              _convertStringToDouble(_formFieldControllers[2].text) /
-              2;
-    var goldenTreeGoldPerDay = _checkboxForm[2]
-        ? (_convertStringToDouble(_formFieldControllers[6].text) +
-                  _convertStringToDouble(_formFieldControllers[8].text)) *
-              goldenTreeGoldPerHour
-        : 0.toDouble();
-    var seasonalColonyGoldPerHour = 16 * adGold / 24;
-    var seasonalColonyGoldPerDay = _checkboxForm[3]
-        ? seasonalColonyGoldPerHour * 24
-        : 0;
-    var colonyGoldPerDay = goldPerCart * cartsPerHour * 24;
+    // Parse all controller values once
+    final f0 = _convertStringToDouble(_formFieldControllers[0].text);
+    final f1 = _convertStringToDouble(_formFieldControllers[1].text);
+    final f2 = _convertStringToDouble(_formFieldControllers[2].text);
+    final f3 = _convertStringToInt(_formFieldControllers[3].text);
+    final f4 = _convertStringToInt(_formFieldControllers[4].text);
+    final f5 = _convertStringToInt(_formFieldControllers[5].text);
+    final f6 = _convertStringToDouble(_formFieldControllers[6].text);
+    final f7 = _convertStringToDouble(_formFieldControllers[7].text);
+    final f8 = _convertStringToDouble(_formFieldControllers[8].text);
+    final w0 = _convertStringToInt(_waveValueControllers[0].text);
+
+    final wph = f2 == 0 ? 0 : (3600 / f2 * f1);
+    final goldPerCart = (f3 * 5400 + 1374406) / 1.2 * (1.2 + 0.01 * f5);
+    final secondsPerCart = 60 / ((f4 * 0.005 + 1.1) + (_checkboxForm[1] ? 0.15 : 0));
+    final icRatio = f0 == 0 ? 0 : (f3 * 1000 / w0);
+    final cartsPerHour = f2 == 0
+        ? 0.0
+        : (((f2 - 1.5) * f0 + 1.5) * 3600 / f2 / secondsPerCart);
+    final adGold = w0 * 2160;
+    final gabCost = 456 * w0 - 29264;
+    final gabBenefitGoldPerWave = gabCost * f7 * 0.01;
+    final gabBenefitGoldPerHour = f2 == 0 ? 0.0 : 3600 / f2 * gabBenefitGoldPerWave;
+    final tabGoldPerWave = gabCost * (1 + f7 * 0.01);
+    final tabGoldPerHour = f2 == 0 ? 0.0 : tabGoldPerWave * (3600 / f2);
+    final tabGoldPerDay = tabGoldPerHour * f8;
+    final gabBenefitGoldPerDay = gabBenefitGoldPerHour * f6;
+    final goldenTreeGoldPerHour = f2 == 0 ? 0.0 : 48 / 456 * gabCost * 3600 / f2 / 2;
+    final goldenTreeGoldPerDay = _checkboxForm[2] ? ((f6 + f8) * goldenTreeGoldPerHour) : 0.0;
+    final seasonalColonyGoldPerHour = 16 * adGold / 24;
+    final seasonalColonyGoldPerDay = _checkboxForm[3] ? seasonalColonyGoldPerHour * 24 : 0.0;
+    final colonyGoldPerDay = goldPerCart * cartsPerHour * 24;
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async {
         await _saveCalculatorData();
@@ -216,11 +180,13 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
             icon: const Icon(Icons.arrow_back),
           ),
         ),
-        body: _isLoading
-            ? Center(child: CircularProgressIndicator())
-            : Padding(
-                padding: const EdgeInsets.all(8),
-                child: ListView(
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: ListView(
                   children: [
                     Column(
                       spacing: 8,
@@ -817,6 +783,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                   ],
                 ),
               ),
+        ),
       ),
     );
   }

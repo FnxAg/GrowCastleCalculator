@@ -122,32 +122,35 @@ class _CalculatorPageState extends State<CalculatorPage>
   List<String> _targetName = List.filled(_maxFormLimit - _defaultForm, '');
   List<int> _targetLevel = List.filled(_maxFormLimit, 10000);
   List<bool> _targetCheckbox = List.filled(_maxFormLimit, true);
-  List<double> get _targetGold => List.generate(_maxFormLimit, (index) {
-    if (index == 0) {
-      return _targetLevel[0] * _targetLevel[0] * 1250;
-    } else if (index == 1) {
-      return _targetLevel[1] * _targetLevel[1] * 500;
-    } else {
-      return CalculatorPage.heroLevelSpendGold(_targetLevel[index]);
-    }
-  });
-  List<String> get _targetGoldString => List.generate(_maxFormLimit, (index) {
-    double gold = _targetGold[index];
-    return decreaseNumSize(gold);
-  });
+  late List<double> _targetGold;
+  late List<String> _targetGoldString;
+  late double _totalGold;
+  late String _totalGoldString;
 
   late Timer _timer;
 
-  double get _totalGold => _targetGold
-      .asMap()
-      .entries
-      .where(
-        (entry) => entry.key < _dynamicFormNum && _targetCheckbox[entry.key],
-      )
-      .map((entry) => entry.value)
-      .fold<double>(0, (previousValue, element) => previousValue + element);
-
-  String get _totalGoldString => decreaseNumSize(_totalGold);
+  void _updateComputedValues() {
+    _targetGold = List.generate(_maxFormLimit, (index) {
+      if (index == 0) {
+        return _targetLevel[0] * _targetLevel[0] * 1250.0;
+      } else if (index == 1) {
+        return _targetLevel[1] * _targetLevel[1] * 500.0;
+      } else {
+        return CalculatorPage.heroLevelSpendGold(_targetLevel[index]);
+      }
+    });
+    _targetGoldString =
+        _targetGold.map((g) => decreaseNumSize(g)).toList();
+    _totalGold = _targetGold
+        .asMap()
+        .entries
+        .where(
+          (entry) => entry.key < _dynamicFormNum && _targetCheckbox[entry.key],
+        )
+        .map((entry) => entry.value)
+        .fold<double>(0, (a, b) => a + b);
+    _totalGoldString = decreaseNumSize(_totalGold);
+  }
 
   int _dynamicFormNum = 7;
   static const int _minFormLimit = 2;
@@ -272,8 +275,10 @@ class _CalculatorPageState extends State<CalculatorPage>
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.detached ||
-        state == AppLifecycleState.inactive ||
-        state == AppLifecycleState.resumed) {
+        state == AppLifecycleState.inactive) {
+      FocusScope.of(context).unfocus();
+      _saveCalculatorData();
+    } else if (state == AppLifecycleState.resumed) {
       _saveCalculatorData();
     }
   }
@@ -281,28 +286,24 @@ class _CalculatorPageState extends State<CalculatorPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _defaultFormNameControllers[0].text = AppLocalizations.of(
-      context,
-    )!.castleDefault;
-    _defaultFormNameControllers[1].text = AppLocalizations.of(
-      context,
-    )!.taDefault;
-    int seasonPassedMilliseconds =
-        now.millisecondsSinceEpoch % 432000000 - 312900000 > 0
-        ? now.millisecondsSinceEpoch % 432000000 - 312900000
-        : now.millisecondsSinceEpoch % 432000000 + 119100000;
-    int hellModePassedMilliseconds =
-        now.millisecondsSinceEpoch % 604800000 - 310800000 > 0
-        ? now.millisecondsSinceEpoch % 604800000 - 310800000
-        : now.millisecondsSinceEpoch % 604800000 + 294000000;
-    int seasonalColonyPassedMilliseconds =
-        now.millisecondsSinceEpoch % 864000000 - 312600000 > 0
-        ? now.millisecondsSinceEpoch % 864000000 - 312600000
-        : now.millisecondsSinceEpoch % 864000000 + 551400000;
-    double seasonProgress = seasonPassedMilliseconds / 432000000;
-    double hellModeProgress = hellModePassedMilliseconds / 604800000;
-    double seasonalColonyProgress =
-        seasonalColonyPassedMilliseconds / 864000000;
+    _updateComputedValues();
+    final nowMs = now.millisecondsSinceEpoch;
+    final seasonPassedMs = nowMs % 432000000 - 312900000 > 0
+        ? nowMs % 432000000 - 312900000
+        : nowMs % 432000000 + 119100000;
+    final hellModePassedMs = nowMs % 604800000 - 310800000 > 0
+        ? nowMs % 604800000 - 310800000
+        : nowMs % 604800000 + 294000000;
+    final seasonalColonyPassedMs = nowMs % 864000000 - 312600000 > 0
+        ? nowMs % 864000000 - 312600000
+        : nowMs % 864000000 + 551400000;
+    final seasonProgress = seasonPassedMs / 432000000;
+    final hellModeProgress = hellModePassedMs / 604800000;
+    final seasonalColonyProgress = seasonalColonyPassedMs / 864000000;
+    final castleDefault = AppLocalizations.of(context)!.castleDefault;
+    final taDefault = AppLocalizations.of(context)!.taDefault;
+    _defaultFormNameControllers[0].text = castleDefault;
+    _defaultFormNameControllers[1].text = taDefault;
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.calculator),
@@ -350,10 +351,9 @@ class _CalculatorPageState extends State<CalculatorPage>
                                     ),
                                     Text(
                                       DateTime.fromMillisecondsSinceEpoch(
-                                        (now.millisecondsSinceEpoch -
-                                                seasonPassedMilliseconds +
-                                                432000000)
-                                            .toInt(),
+                                        (nowMs -
+                                                seasonPassedMs +
+                                                432000000),
                                       ).toLocal().toString().split(".")[0],
                                       textAlign: TextAlign.right,
                                     ),
@@ -402,10 +402,9 @@ class _CalculatorPageState extends State<CalculatorPage>
                                     ),
                                     Text(
                                       DateTime.fromMillisecondsSinceEpoch(
-                                        (now.millisecondsSinceEpoch -
-                                                hellModePassedMilliseconds +
-                                                604800000)
-                                            .toInt(),
+                                        (nowMs -
+                                                hellModePassedMs +
+                                                604800000),
                                       ).toLocal().toString().split(".")[0],
                                       textAlign: TextAlign.right,
                                     ),
@@ -454,10 +453,9 @@ class _CalculatorPageState extends State<CalculatorPage>
                                     ),
                                     Text(
                                       DateTime.fromMillisecondsSinceEpoch(
-                                        (now.millisecondsSinceEpoch -
-                                                seasonalColonyPassedMilliseconds +
-                                                864000000)
-                                            .toInt(),
+                                        (nowMs -
+                                                seasonalColonyPassedMs +
+                                                864000000),
                                       ).toLocal().toString().split(".")[0],
                                       textAlign: TextAlign.right,
                                     ),
@@ -510,9 +508,11 @@ class _CalculatorPageState extends State<CalculatorPage>
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
           children: [
             Row(
               spacing: 8,
@@ -781,6 +781,7 @@ class _CalculatorPageState extends State<CalculatorPage>
           ],
         ),
       ),
+    ),
     );
   }
 }
