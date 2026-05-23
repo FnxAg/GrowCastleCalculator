@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:grow_castle_calculator/pages/update_checker_page/update_checker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
@@ -114,6 +120,18 @@ class _SettingsPageState extends State<SettingsPage> {
                     );
                 }
               },
+            ),
+            ListTile(
+              leading: const Icon(Icons.file_upload),
+              title: Text(AppLocalizations.of(context)!.exportData),
+              trailing: const Icon(Icons.keyboard_arrow_right),
+              onTap: _exportData,
+            ),
+            ListTile(
+              leading: const Icon(Icons.file_download),
+              title: Text(AppLocalizations.of(context)!.importData),
+              trailing: const Icon(Icons.keyboard_arrow_right),
+              onTap: _importData,
             ),
             ListTile(
               leading: _isChecking
@@ -371,6 +389,190 @@ class _SettingsPageState extends State<SettingsPage> {
     prefs.remove('gc_isExpanded');
   }
   
+  static const _dataKeys = [
+    'dynamicFormNum',
+    'waveValue',
+    'targetName',
+    'targetLevel',
+    'targetCheckbox',
+    'gc_waveValue',
+    'gc_formField',
+    'gc_checkboxForm',
+    'gc_isExpanded',
+  ];
+
+  static const _stringListKeys = {
+    'waveValue',
+    'targetName',
+    'targetLevel',
+    'targetCheckbox',
+    'gc_waveValue',
+    'gc_formField',
+    'gc_checkboxForm',
+    'gc_isExpanded',
+  };
+
+  Future<void> _exportData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final data = <String, dynamic>{};
+      for (final key in _dataKeys) {
+        if (_stringListKeys.contains(key)) {
+          data[key] = prefs.getStringList(key);
+        } else {
+          data[key] = prefs.getInt(key);
+        }
+      }
+
+      final exportMap = {
+        'version': 1,
+        'app': 'grow_castle_calculator',
+        'exportTime': DateTime.now().toIso8601String(),
+        'data': data,
+      };
+
+      final jsonString = const JsonEncoder.withIndent('  ').convert(exportMap);
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/grow_castle_data_export.json');
+      await file.writeAsString(jsonString);
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        subject: 'Grow Castle Calculator - Data Export',
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.exportSuccess),
+          ),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.exportFailed),
+          ),
+        );
+    }
+  }
+
+  Future<void> _importData() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final filePath = result.files.single.path;
+      if (filePath == null) return;
+
+      final file = File(filePath);
+      if (!await file.exists()) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..removeCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.importFailed),
+            ),
+          );
+        return;
+      }
+
+      final jsonString = await file.readAsString();
+      final decoded = json.decode(jsonString);
+
+      if (decoded is! Map<String, dynamic>) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..removeCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.invalidDataFormat),
+            ),
+          );
+        return;
+      }
+
+      final data = decoded['data'];
+      if (data is! Map<String, dynamic>) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context)
+          ..removeCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)!.invalidDataFormat),
+            ),
+          );
+        return;
+      }
+
+      if (!mounted) return;
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(AppLocalizations.of(context)!.importData),
+          content: Text(AppLocalizations.of(context)!.importWarning),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(AppLocalizations.of(context)!.importData),
+            ),
+          ],
+        ),
+      );
+
+      if (confirm != true) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      for (final key in _dataKeys) {
+        if (!data.containsKey(key)) continue;
+        final value = data[key];
+        if (_stringListKeys.contains(key)) {
+          if (value is List) {
+            await prefs.setStringList(
+              key,
+              value.map((e) => e.toString()).toList(),
+            );
+          }
+        } else {
+          if (value is int) {
+            await prefs.setInt(key, value);
+          } else if (value is String) {
+            await prefs.setInt(key, int.tryParse(value) ?? 0);
+          }
+        }
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.importSuccess),
+          ),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.importFailed),
+          ),
+        );
+    }
+  }
+
   bool _isChecking = false;
 
   void _checkUpdate() async {

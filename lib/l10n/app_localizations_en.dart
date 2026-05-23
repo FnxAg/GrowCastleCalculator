@@ -111,6 +111,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tool Page\nComing Soon!\nTodo List:\n- Gold Calculator\n- Time Till Reset\n- Level Cost Calculator\n- Infinite Colony Calculator\n- Damage Comparison\n- GPW';
 
   @override
+  String get exportData => 'Export Data';
+
+  @override
+  String get importData => 'Import Data';
+
+  @override
+  String get exportSuccess => 'Data exported successfully';
+
+  @override
+  String get exportFailed => 'Failed to export data';
+
+  @override
+  String get importSuccess => 'Data imported successfully';
+
+  @override
+  String get importFailed => 'Failed to import data';
+
+  @override
+  String get invalidDataFormat => 'Invalid file format';
+
+  @override
+  String get importWarning => 'This will overwrite the current data. Continue?';
+
+  @override
   String get language => 'Language';
 
   @override

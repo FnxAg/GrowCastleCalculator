@@ -296,6 +296,54 @@ abstract class AppLocalizations {
   /// **'Tool Page\nComing Soon!\nTodo List:\n- Gold Calculator\n- Time Till Reset\n- Level Cost Calculator\n- Infinite Colony Calculator\n- Damage Comparison\n- GPW'**
   String get todo;
 
+  /// No description provided for @exportData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Data'**
+  String get exportData;
+
+  /// No description provided for @importData.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Data'**
+  String get importData;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data exported successfully'**
+  String get exportSuccess;
+
+  /// No description provided for @exportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export data'**
+  String get exportFailed;
+
+  /// No description provided for @importSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Data imported successfully'**
+  String get importSuccess;
+
+  /// No description provided for @importFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to import data'**
+  String get importFailed;
+
+  /// No description provided for @invalidDataFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid file format'**
+  String get invalidDataFormat;
+
+  /// No description provided for @importWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'This will overwrite the current data. Continue?'**
+  String get importWarning;
+
   /// No description provided for @language.
   ///
   /// In en, this message translates to:

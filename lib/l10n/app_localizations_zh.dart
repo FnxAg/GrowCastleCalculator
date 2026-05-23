@@ -111,6 +111,30 @@ class AppLocalizationsZh extends AppLocalizations {
       '工具页面\n施工中\n未来可能的新功能：\n- 收入计算器\n- 赛季/无尽/赛季殖民地重置倒计时\n- 升级计算器\n- 通天回本计算器\n- 伤害对比\n- 收益计算';
 
   @override
+  String get exportData => '导出数据';
+
+  @override
+  String get importData => '导入数据';
+
+  @override
+  String get exportSuccess => '数据导出成功';
+
+  @override
+  String get exportFailed => 'Failed to export data';
+
+  @override
+  String get importSuccess => '数据导入成功';
+
+  @override
+  String get importFailed => '数据导入失败';
+
+  @override
+  String get invalidDataFormat => '无效的文件格式';
+
+  @override
+  String get importWarning => '导入将覆盖当前数据，确定继续吗？';
+
+  @override
   String get language => '语言';
 
   @override
