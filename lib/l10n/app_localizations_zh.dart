@@ -75,7 +75,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get progress => '进度';
 
   @override
-  String get updateTime => '更新时间：';
+  String get updateTime => '截止时间：';
 
   @override
   String get timeTillReset => '重置倒计时：';
@@ -85,14 +85,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String unitName(int index) {
-    return '单位 $index 名称';
+    return '单位 $index';
   }
 
   @override
   String get enterUnitName => '输入单位名称';
 
   @override
-  String get unitLevel => '单位等级';
+  String get unitLevel => '等级';
 
   @override
   String get enterUnitLevel => '输入单位等级';
@@ -223,7 +223,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goldDay => '每日收入：';
 
   @override
-  String get gameSpeed => '游戏速度：';
+  String get gameSpeed => '游戏速度';
 
   @override
   String get enterGameSpeed => '输入游戏速度';
@@ -235,16 +235,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterWave => '输入波数';
 
   @override
-  String get waveTime => '单波时间（秒）';
+  String get waveTime => '单波时间(s)';
 
   @override
-  String get enterWaveTime => '输入单波时间（秒）';
+  String get enterWaveTime => '输入单波时间(s)';
 
   @override
   String get infiniteColony => '通天塔';
 
   @override
-  String get icLevel => '通天塔等级';
+  String get icLevel => '通天塔等级(LV)';
 
   @override
   String get enterLV => '输入等级';
@@ -271,19 +271,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get icRatio => '通天塔比例：';
 
   @override
-  String get goldHour => '每小时收入：';
+  String get goldHour => '小时收入：';
 
   @override
-  String get goldAutoBattle => '金挂（GAB）';
+  String get goldAutoBattle => '金挂(GAB)';
 
   @override
-  String get gabHourDay => '每日金挂时间';
+  String get gabHourDay => '每日金挂时长(h)';
 
   @override
-  String get enterHour => '输入小时数';
+  String get enterHour => '输入时长';
 
   @override
-  String get gabProfit => '金挂收益 %';
+  String get gabProfit => '金挂收益(%)';
 
   @override
   String get enterProfit => '输入收益百分比';
@@ -292,10 +292,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goldWave => '每波收益：';
 
   @override
-  String get timeAutoBattle => '时挂（TAB）';
+  String get timeAutoBattle => '时挂(TAB)';
 
   @override
-  String get tabHourDay => '每日时挂时间';
+  String get tabHourDay => '每日时挂时长(h)';
 
   @override
   String get goldenTree => '金币大树';

@@ -251,7 +251,7 @@ abstract class AppLocalizations {
   /// No description provided for @unitName.
   ///
   /// In en, this message translates to:
-  /// **'Unit {index} Name'**
+  /// **'Unit {index}'**
   String unitName(int index);
 
   /// No description provided for @enterUnitName.
@@ -515,7 +515,7 @@ abstract class AppLocalizations {
   /// No description provided for @gameSpeed.
   ///
   /// In en, this message translates to:
-  /// **'Game Speed: '**
+  /// **'Game Speed'**
   String get gameSpeed;
 
   /// No description provided for @enterGameSpeed.

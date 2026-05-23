@@ -85,7 +85,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String unitName(int index) {
-    return 'Unit $index Name';
+    return 'Unit $index';
   }
 
   @override
@@ -224,7 +224,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goldDay => 'Gold/Day: ';
 
   @override
-  String get gameSpeed => 'Game Speed: ';
+  String get gameSpeed => 'Game Speed';
 
   @override
   String get enterGameSpeed => 'Enter Game Speed';

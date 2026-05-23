@@ -24,7 +24,7 @@
     "updateTime": "Update Time: ",
     "timeTillReset": "Time Till Reset: ",
     "wph": "WPH: ",
-    "unitName": "Unit {index} Name",
+    "unitName": "Unit {index}",
     "@unitName": {
         "placeholders": {
             "index": {
@@ -89,7 +89,7 @@
     "inherit": "Inherit",
     "gabCost": "GAB Cost: ",
     "goldDay": "Gold/Day: ",
-    "gameSpeed": "Game Speed: ",
+    "gameSpeed": "Game Speed",
     "enterGameSpeed": "Enter Game Speed",
     "jumpAndWave": "Jump + Wave",
     "enterWave": "Enter Wave",
