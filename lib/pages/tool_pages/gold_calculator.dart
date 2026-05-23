@@ -25,6 +25,9 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
   List<int> _waveValue = List.generate(2, (index) => 1000000 - index * 960000);
   List<dynamic> _formField = List.filled(9, 0);
   List<bool> _checkboxForm = List.filled(4, true);
+  
+  static const int textExpandedFlex = 15;
+  static const int sizedBoxExpandedFlex = 1;
 
   final List<TextEditingController> _waveValueControllers = [
     TextEditingController(),
@@ -257,15 +260,15 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           spacing: 12,
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.gabCost,
-                                variable: decreaseNumSize(gabCost.toDouble()),
+                                variable: decreaseNumSize(gabCost.toDouble(), context),
                               ),
                             ),
-                            Expanded(flex: 1, child: SizedBox()),
+                            Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldDay,
                                 variable: decreaseNumSize(
@@ -273,7 +276,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                                       gabBenefitGoldPerDay +
                                       tabGoldPerDay +
                                       goldenTreeGoldPerDay +
-                                      seasonalColonyGoldPerDay,
+                                      seasonalColonyGoldPerDay, context
                                 ),
                               ),
                             ),
@@ -464,19 +467,19 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           spacing: 12,
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.secCart,
                                 variable:
                                     '${secondsPerCart.toStringAsFixed(2)}s',
                               ),
                             ),
-                            Expanded(flex: 1, child: SizedBox()),
+                            Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldCart,
-                                variable: decreaseNumSize(goldPerCart),
+                                variable: decreaseNumSize(goldPerCart, context),
                               ),
                             ),
                           ],
@@ -485,15 +488,15 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           spacing: 12,
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.cartHour,
                                 variable: cartsPerHour.toStringAsFixed(2),
                               ),
                             ),
-                            Expanded(flex: 1, child: SizedBox()),
+                            Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.icRatio,
                                 variable: icRatio.toStringAsFixed(2),
@@ -505,20 +508,20 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           spacing: 12,
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldHour,
                                 variable: decreaseNumSize(
-                                  goldPerCart * cartsPerHour,
+                                  goldPerCart * cartsPerHour, context
                                 ),
                               ),
                             ),
-                            Expanded(flex: 1, child: SizedBox()),
+                            Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldDay,
-                                variable: decreaseNumSize(colonyGoldPerDay),
+                                variable: decreaseNumSize(colonyGoldPerDay, context),
                               ),
                             ),
                           ],
@@ -592,20 +595,20 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           spacing: 12,
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldWave,
                                 variable: decreaseNumSize(
-                                  gabBenefitGoldPerWave,
+                                  gabBenefitGoldPerWave, context
                                 ),
                               ),
                             ),
-                            Expanded(flex: 1, child: SizedBox()),
+                            Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldDay,
-                                variable: decreaseNumSize(gabBenefitGoldPerDay),
+                                variable: decreaseNumSize(gabBenefitGoldPerDay, context),
                               ),
                             ),
                           ],
@@ -664,18 +667,18 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           spacing: 12,
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldWave,
-                                variable: decreaseNumSize(tabGoldPerWave),
+                                variable: decreaseNumSize(tabGoldPerWave, context),
                               ),
                             ),
-                            Expanded(flex: 1, child: SizedBox()),
+                            Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldDay,
-                                variable: decreaseNumSize(tabGoldPerDay),
+                                variable: decreaseNumSize(tabGoldPerDay, context),
                               ),
                             ),
                           ],
@@ -710,20 +713,20 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           spacing: 12,
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldHour,
                                 variable: decreaseNumSize(
-                                  goldenTreeGoldPerHour,
+                                  goldenTreeGoldPerHour, context
                                 ),
                               ),
                             ),
-                            Expanded(flex: 1, child: SizedBox()),
+                            Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldDay,
-                                variable: decreaseNumSize(goldenTreeGoldPerDay),
+                                variable: decreaseNumSize(goldenTreeGoldPerDay, context),
                               ),
                             ),
                           ],
@@ -758,21 +761,21 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           spacing: 12,
                           children: [
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldHour,
                                 variable: decreaseNumSize(
-                                  seasonalColonyGoldPerHour.toDouble(),
+                                  seasonalColonyGoldPerHour.toDouble(), context
                                 ),
                               ),
                             ),
-                            Expanded(flex: 1, child: SizedBox()),
+                            Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
                             Expanded(
-                              flex: 3,
+                              flex: textExpandedFlex,
                               child: ExpandedText(
                                 name: AppLocalizations.of(context)!.goldDay,
                                 variable: decreaseNumSize(
-                                  seasonalColonyGoldPerDay.toDouble(),
+                                  seasonalColonyGoldPerDay.toDouble(), context
                                 ),
                               ),
                             ),

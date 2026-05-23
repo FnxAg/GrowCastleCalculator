@@ -100,8 +100,9 @@ int _convertStringToInt(String value) {
   return int.tryParse(value) ?? 0;
 }
 
-String decreaseNumSize(double gold) {
-  const suffixes = ['K', 'M', 'B', 'T', 'Qua', 'Qui', 'Sex', 'Sep'];
+String decreaseNumSize(double gold, BuildContext context) {
+  const suffixes = ['K', 'M', 'B', 'T', 'P', 'E',];
+  const suffixesZhCn = ['万', '亿', '万亿', '亿亿', '万亿亿', '亿亿亿'];
   double value = gold;
   int index = -1;
 
@@ -110,11 +111,34 @@ String decreaseNumSize(double gold) {
     index++;
   }
 
+  String result;
   if (index == -1) {
-    return gold.toStringAsFixed(0);
+    result = gold.toStringAsFixed(0);
+  } else {
+    result = '${value.toStringAsFixed(0)} ${suffixes[index]}';
   }
 
-  return '${value.toStringAsFixed(0)} ${suffixes[index]}';
+  final locale = Localizations.localeOf(context);
+  if (locale.languageCode == 'zh') {
+    double zhValue = gold;
+    int zhIndex = -1;
+
+    while (zhValue >= 10000 && zhIndex < suffixesZhCn.length - 1) {
+      zhValue /= 10000;
+      zhIndex++;
+    }
+
+    String zhResult;
+    if (zhIndex == -1) {
+      zhResult = gold.toStringAsFixed(0);
+    } else {
+      zhResult = '${zhValue.toStringAsFixed(2)} ${suffixesZhCn[zhIndex]}';
+    }
+
+    result = '$zhResult / $result';
+  }
+
+  return result;
 }
 
 class _CalculatorPageState extends State<CalculatorPage>
@@ -129,7 +153,7 @@ class _CalculatorPageState extends State<CalculatorPage>
 
   late Timer _timer;
 
-  void _updateComputedValues() {
+  void _updateComputedValues(BuildContext context) {
     _targetGold = List.generate(_maxFormLimit, (index) {
       if (index == 0) {
         return _targetLevel[0] * _targetLevel[0] * 1250.0;
@@ -140,7 +164,7 @@ class _CalculatorPageState extends State<CalculatorPage>
       }
     });
     _targetGoldString =
-        _targetGold.map((g) => decreaseNumSize(g)).toList();
+        _targetGold.map((g) => decreaseNumSize(g, context)).toList();
     _totalGold = _targetGold
         .asMap()
         .entries
@@ -149,7 +173,7 @@ class _CalculatorPageState extends State<CalculatorPage>
         )
         .map((entry) => entry.value)
         .fold<double>(0, (a, b) => a + b);
-    _totalGoldString = decreaseNumSize(_totalGold);
+    _totalGoldString = decreaseNumSize(_totalGold, context);
   }
 
   int _dynamicFormNum = 7;
@@ -286,7 +310,7 @@ class _CalculatorPageState extends State<CalculatorPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    _updateComputedValues();
+    _updateComputedValues(context);
     final nowMs = now.millisecondsSinceEpoch;
     final seasonPassedMs = nowMs % 432000000 - 312900000 > 0
         ? nowMs % 432000000 - 312900000
