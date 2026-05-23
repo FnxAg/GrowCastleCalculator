@@ -218,7 +218,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                             ),
                             Expanded(
                               flex: 4,
-                              child: TextFormField(
+                              child: TextField(
                                 controller: _waveValueControllers[0],
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [
@@ -237,7 +237,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                             ),
                             Expanded(
                               flex: 4,
-                              child: TextFormField(
+                              child: TextField(
                                 controller: _waveValueControllers[1],
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [
@@ -287,7 +287,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                           children: [
                             Expanded(
                               flex: 1,
-                              child: TextFormField(
+                              child: TextField(
                                 controller: _formFieldControllers[0],
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [FormatterWithMinusAndDot()],
@@ -303,7 +303,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                             ),
                             Expanded(
                               flex: 1,
-                              child: TextFormField(
+                              child: TextField(
                                 controller: _formFieldControllers[1],
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [FormatterWithMinusAndDot()],
@@ -319,7 +319,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                             ),
                             Expanded(
                               flex: 1,
-                              child: TextFormField(
+                              child: TextField(
                                 controller: _formFieldControllers[2],
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [FormatterWithMinusAndDot()],
@@ -374,7 +374,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                                       spacing: 8,
                                       children: [
                                         Expanded(
-                                          child: TextFormField(
+                                          child: TextField(
                                             controller:
                                                 _formFieldControllers[3],
                                             keyboardType: TextInputType.number,
@@ -415,7 +415,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                                       children: [
                                         Expanded(
                                           flex: 4,
-                                          child: TextFormField(
+                                          child: TextField(
                                             controller:
                                                 _formFieldControllers[4],
                                             keyboardType: TextInputType.number,
@@ -437,7 +437,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                                         ),
                                         Expanded(
                                           flex: 4,
-                                          child: TextFormField(
+                                          child: TextField(
                                             controller:
                                                 _formFieldControllers[5],
                                             keyboardType: TextInputType.number,
@@ -558,7 +558,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                                   spacing: 8,
                                   children: [
                                     Expanded(
-                                      child: TextFormField(
+                                      child: TextField(
                                         controller: _formFieldControllers[6],
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
@@ -573,7 +573,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                                       ),
                                     ),
                                     Expanded(
-                                      child: TextFormField(
+                                      child: TextField(
                                         controller: _formFieldControllers[7],
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(
@@ -645,7 +645,7 @@ class _GoldCalculatorState extends State<GoldCalculator> with WidgetsBindingObse
                                   spacing: 8,
                                   children: [
                                     Expanded(
-                                      child: TextFormField(
+                                      child: TextField(
                                         controller: _formFieldControllers[8],
                                         keyboardType: TextInputType.number,
                                         decoration: InputDecoration(

@@ -115,7 +115,7 @@ String decreaseNumSize(double gold, BuildContext context) {
   if (index == -1) {
     result = gold.toStringAsFixed(0);
   } else {
-    result = '${value.toStringAsFixed(0)} ${suffixes[index]}';
+    result = '${value.toStringAsFixed(0)}${suffixes[index]}';
   }
 
   final locale = Localizations.localeOf(context);
@@ -132,10 +132,10 @@ String decreaseNumSize(double gold, BuildContext context) {
     if (zhIndex == -1) {
       zhResult = gold.toStringAsFixed(0);
     } else {
-      zhResult = '${zhValue.toStringAsFixed(2)} ${suffixesZhCn[zhIndex]}';
+      zhResult = '${zhValue.toStringAsFixed(2)}${suffixesZhCn[zhIndex]}';
     }
 
-    result = '$zhResult / $result';
+    result = '$zhResult | $result';
   }
 
   return result;
@@ -268,7 +268,7 @@ class _CalculatorPageState extends State<CalculatorPage>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     loadCalculatorData();
-    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       setState(() {
         now = DateTime.now();
       });
@@ -523,7 +523,12 @@ class _CalculatorPageState extends State<CalculatorPage>
                     children: [
                       Icon(Icons.timer),
                       SizedBox(width: 4),
-                      Text('${(seasonProgress * 100).toStringAsFixed(2)}%'),
+                      Column(
+                        children: [
+                          Text('${(seasonProgress * 100).toStringAsFixed(2)}%'),
+                          Text('${((CalculatorPage.seasonHours * (1 - seasonProgress) / 24).truncateToDouble() / 1).toStringAsFixed(0)}d ${((CalculatorPage.seasonHours * (1 - seasonProgress)) % 24).toStringAsFixed(0)}h'),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -543,7 +548,7 @@ class _CalculatorPageState extends State<CalculatorPage>
               children: [
                 Expanded(
                   flex: 5,
-                  child: TextFormField(
+                  child: TextField(
                     controller: _waveValueControllers[0],
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -563,7 +568,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                 ),
                 Expanded(
                   flex: 5,
-                  child: TextFormField(
+                  child: TextField(
                     controller: _waveValueControllers[1],
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -648,7 +653,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                             ),
                             Expanded(
                               flex: 4,
-                              child: TextFormField(
+                              child: TextField(
                                 controller: index < _defaultForm
                                     ? _defaultFormNameControllers[index]
                                     : _targetNameControllers[index -
@@ -672,7 +677,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                             ),
                             Expanded(
                               flex: 5,
-                              child: TextFormField(
+                              child: TextField(
                                 controller: _targetLevelControllers[index],
                                 keyboardType: TextInputType.number,
                                 inputFormatters: [
