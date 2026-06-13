@@ -1,57 +1,63 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Centralized access to all [SharedPreferences] keys used by the app.
+import 'package:grow_castle_calculator/models/calculator_data.dart';
+import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
+
+/// Centralized access to all persisted app state.
 ///
-/// All persistence keys and their read/write logic live here so that pages
-/// don't scatter magic strings or duplicate save/load patterns.
+/// Each page's data is stored as a single JSON string so that a save or load
+/// costs exactly **one** platform-channel call instead of 5–6.  The service
+/// also auto-migrates data that was stored with the old per-field key scheme.
 class PreferencesService {
   PreferencesService._();
+
+  // ── Cached instance ────────────────────────────────────────────────────
+
+  static SharedPreferences? _instance;
+
+  static Future<SharedPreferences> get _prefs async {
+    _instance ??= await SharedPreferences.getInstance();
+    return _instance!;
+  }
+
+  /// Call after a sign-out / data-clear to force a fresh instance next read.
+  static void _invalidate() {
+    _instance = null;
+  }
 
   // ── Key constants ──────────────────────────────────────────────────────
 
   static const _keyLocaleChoice = 'localeChoice';
   static const _keyThemeChoice = 'themeChoice';
-  static const _keyDynamicFormNum = 'dynamicFormNum';
-  static const _keyWaveValue = 'waveValue';
-  static const _keyTargetName = 'targetName';
-  static const _keyTargetLevel = 'targetLevel';
-  static const _keyTargetCheckbox = 'targetCheckbox';
-  static const _keyGcWaveValue = 'gc_waveValue';
-  static const _keyGcFormField = 'gc_formField';
-  static const _keyGcCheckboxForm = 'gc_checkboxForm';
-  static const _keyGcIsExpanded = 'gc_isExpanded';
 
-  /// All data keys used by the app (for export / clear-data operations).
-  static const List<String> allDataKeys = [
-    _keyDynamicFormNum,
-    _keyWaveValue,
-    _keyTargetName,
-    _keyTargetLevel,
-    _keyTargetCheckbox,
-    _keyGcWaveValue,
-    _keyGcFormField,
-    _keyGcCheckboxForm,
-    _keyGcIsExpanded,
+  /// Single-key JSON storage (new format).
+  static const _keyCalculatorData = 'calculator_data';
+  static const _keyGoldCalculatorData = 'gold_calculator_data';
+
+  /// Old per-field keys — kept for migration.
+  static const _legacyCalculatorKeys = [
+    'dynamicFormNum',
+    'waveValue',
+    'targetName',
+    'targetLevel',
+    'targetCheckbox',
+  ];
+  static const _legacyGoldCalculatorKeys = [
+    'gc_waveValue',
+    'gc_formField',
+    'gc_checkboxForm',
+    'gc_isExpanded',
   ];
 
-  /// Subset of keys whose values are stored as [StringList].
-  static const Set<String> stringListKeys = {
-    _keyWaveValue,
-    _keyTargetName,
-    _keyTargetLevel,
-    _keyTargetCheckbox,
-    _keyGcWaveValue,
-    _keyGcFormField,
-    _keyGcCheckboxForm,
-    _keyGcIsExpanded,
-  };
+  /// Keys that are removed during [clearAllData].
+  static const List<String> allDataKeys = [
+    _keyCalculatorData,
+    _keyGoldCalculatorData,
+    ..._legacyCalculatorKeys,
+    ..._legacyGoldCalculatorKeys,
+  ];
 
-  // ── Convenience getter ─────────────────────────────────────────────────
-
-  static Future<SharedPreferences> get _prefs =>
-      SharedPreferences.getInstance();
-
-  // ── Locale ──────────────────────────────────────────────────────────────
+  // ── Locale / Theme (kept as simple ints — trivial) ────────────────────
 
   static Future<int> getLocaleChoice() async {
     final prefs = await _prefs;
@@ -63,8 +69,6 @@ class PreferencesService {
     await prefs.setInt(_keyLocaleChoice, value);
   }
 
-  // ── Theme ───────────────────────────────────────────────────────────────
-
   static Future<int> getThemeChoice() async {
     final prefs = await _prefs;
     return prefs.getInt(_keyThemeChoice) ?? 0;
@@ -75,104 +79,157 @@ class PreferencesService {
     await prefs.setInt(_keyThemeChoice, value);
   }
 
-  // ── Calculator page data ───────────────────────────────────────────────
+  // ── Calculator page (single JSON key) ─────────────────────────────────
 
-  static Future<Map<String, dynamic>> loadCalculatorData() async {
+  /// Loads calculator data, migrating from the old per-field keys if needed.
+  static Future<CalculatorData> loadCalculatorData() async {
     final prefs = await _prefs;
-    return {
-      'dynamicFormNum': prefs.getInt(_keyDynamicFormNum) ?? 7,
-      'waveValue': prefs.getStringList(_keyWaveValue) ?? ['1000000', '40000'],
-      'targetName': prefs.getStringList(_keyTargetName) ?? [],
-      'targetLevel': prefs.getStringList(_keyTargetLevel) ?? [],
-      'targetCheckbox': prefs.getStringList(_keyTargetCheckbox) ?? [],
-    };
+    final jsonString = prefs.getString(_keyCalculatorData);
+
+    if (jsonString != null) {
+      return CalculatorData.fromJson(jsonString);
+    }
+
+    // ── Migration: try old per-field keys ────────────────────────────────
+    final migrated = _migrateCalculatorData(prefs);
+    if (migrated != null) {
+      // Persist in new format so next load hits the fast path.
+      await prefs.setString(_keyCalculatorData, migrated.toJson());
+      // Remove old keys.
+      for (final key in _legacyCalculatorKeys) {
+        await prefs.remove(key);
+      }
+      return migrated;
+    }
+
+    return CalculatorData.defaults();
   }
 
-  static Future<void> saveCalculatorData({
-    required int dynamicFormNum,
-    required List<String> waveValue,
-    required List<String> targetName,
-    required List<String> targetLevel,
-    required List<String> targetCheckbox,
-  }) async {
+  static Future<void> saveCalculatorData(CalculatorData data) async {
     final prefs = await _prefs;
-    await prefs.setInt(_keyDynamicFormNum, dynamicFormNum);
-    await prefs.setStringList(_keyWaveValue, waveValue);
-    await prefs.setStringList(_keyTargetName, targetName);
-    await prefs.setStringList(_keyTargetLevel, targetLevel);
-    await prefs.setStringList(_keyTargetCheckbox, targetCheckbox);
+    await prefs.setString(_keyCalculatorData, data.toJson());
   }
 
-  // ── Gold calculator page data ──────────────────────────────────────────
+  /// Attempts to build a [CalculatorData] from the old per-field keys.
+  static CalculatorData? _migrateCalculatorData(SharedPreferences prefs) {
+    final waveStr = prefs.getStringList('waveValue');
+    if (waveStr == null) return null; // no old data at all
 
-  static Future<Map<String, dynamic>> loadGoldCalculatorData() async {
-    final prefs = await _prefs;
-    return {
-      'gc_waveValue':
-          prefs.getStringList(_keyGcWaveValue) ?? ['1000000', '40000'],
-      'gc_formField': prefs.getStringList(_keyGcFormField) ?? [],
-      'gc_checkboxForm': prefs.getStringList(_keyGcCheckboxForm) ?? [],
-      'gc_isExpanded': prefs.getStringList(_keyGcIsExpanded) ?? [],
-    };
+    return CalculatorData(
+      dynamicFormNum: prefs.getInt('dynamicFormNum') ?? 7,
+      waveValue: waveStr.map((e) => int.tryParse(e) ?? 0).toList(),
+      targetName: prefs.getStringList('targetName') ?? [],
+      targetLevel: (prefs.getStringList('targetLevel') ?? [])
+          .map((e) => int.tryParse(e) ?? 10000)
+          .toList(),
+      targetCheckbox: (prefs.getStringList('targetCheckbox') ?? [])
+          .map((e) => e == 'true')
+          .toList(),
+    );
   }
 
-  static Future<void> saveGoldCalculatorData({
-    required List<String> gcWaveValue,
-    required List<String> gcFormField,
-    required List<String> gcCheckboxForm,
-    required List<String> gcIsExpanded,
-  }) async {
+  // ── Gold calculator page (single JSON key) ────────────────────────────
+
+  static Future<GoldCalculatorData> loadGoldCalculatorData() async {
     final prefs = await _prefs;
-    await prefs.setStringList(_keyGcWaveValue, gcWaveValue);
-    await prefs.setStringList(_keyGcFormField, gcFormField);
-    await prefs.setStringList(_keyGcCheckboxForm, gcCheckboxForm);
-    await prefs.setStringList(_keyGcIsExpanded, gcIsExpanded);
+    final jsonString = prefs.getString(_keyGoldCalculatorData);
+
+    if (jsonString != null) {
+      return GoldCalculatorData.fromJson(jsonString);
+    }
+
+    // ── Migration ────────────────────────────────────────────────────────
+    final migrated = _migrateGoldCalculatorData(prefs);
+    if (migrated != null) {
+      await prefs.setString(_keyGoldCalculatorData, migrated.toJson());
+      for (final key in _legacyGoldCalculatorKeys) {
+        await prefs.remove(key);
+      }
+      return migrated;
+    }
+
+    return GoldCalculatorData.defaults();
+  }
+
+  static Future<void> saveGoldCalculatorData(GoldCalculatorData data) async {
+    final prefs = await _prefs;
+    await prefs.setString(_keyGoldCalculatorData, data.toJson());
+  }
+
+  static GoldCalculatorData? _migrateGoldCalculatorData(SharedPreferences prefs) {
+    final waveStr = prefs.getStringList('gc_waveValue');
+    if (waveStr == null) return null;
+
+    return GoldCalculatorData(
+      waveValue: waveStr.map((e) => int.tryParse(e) ?? 0).toList(),
+      formField: (prefs.getStringList('gc_formField') ?? [])
+          .map((e) => int.tryParse(e) != null ? int.parse(e) : double.parse(e))
+          .toList(),
+      checkboxForm: (prefs.getStringList('gc_checkboxForm') ?? [])
+          .map((e) => e == 'true')
+          .toList(),
+      isExpanded: (prefs.getStringList('gc_isExpanded') ?? [])
+          .map((e) => e == 'true')
+          .toList(),
+    );
   }
 
   // ── Bulk operations ────────────────────────────────────────────────────
 
-  /// Removes all app data from SharedPreferences (does NOT remove locale / theme).
+  /// Removes all app data (both old and new formats), but keeps locale/theme.
   static Future<void> clearAllData() async {
     final prefs = await _prefs;
     for (final key in allDataKeys) {
       await prefs.remove(key);
     }
+    _invalidate();
   }
 
-  /// Exports all stored data as a [Map].
+  /// Exports all stored data as a JSON-serializable [Map].
   static Future<Map<String, dynamic>> exportAllData() async {
     final prefs = await _prefs;
     final data = <String, dynamic>{};
-    for (final key in allDataKeys) {
-      if (stringListKeys.contains(key)) {
-        data[key] = prefs.getStringList(key);
-      } else {
-        data[key] = prefs.getInt(key);
-      }
+
+    // New-format keys (JSON strings stored directly).
+    final calcJson = prefs.getString(_keyCalculatorData);
+    if (calcJson != null) {
+      data[_keyCalculatorData] = calcJson;
     }
+    final gcJson = prefs.getString(_keyGoldCalculatorData);
+    if (gcJson != null) {
+      data[_keyGoldCalculatorData] = gcJson;
+    }
+
+    // Also export locale/theme for completeness.
+    data[_keyLocaleChoice] = prefs.getInt(_keyLocaleChoice) ?? 0;
+    data[_keyThemeChoice] = prefs.getInt(_keyThemeChoice) ?? 0;
+
     return data;
   }
 
-  /// Imports data from a [Map] (only keys in [allDataKeys] are processed).
+  /// Imports data from a [Map] previously produced by [exportAllData].
   static Future<void> importData(Map<String, dynamic> data) async {
     final prefs = await _prefs;
-    for (final key in allDataKeys) {
-      if (!data.containsKey(key)) continue;
-      final value = data[key];
-      if (stringListKeys.contains(key)) {
-        if (value is List) {
-          await prefs.setStringList(
-            key,
-            value.map((e) => e.toString()).toList(),
-          );
-        }
-      } else {
-        if (value is int) {
-          await prefs.setInt(key, value);
-        } else if (value is String) {
-          await prefs.setInt(key, int.tryParse(value) ?? 0);
-        }
-      }
+
+    // New-format keys.
+    if (data[_keyCalculatorData] is String) {
+      await prefs.setString(_keyCalculatorData, data[_keyCalculatorData]);
+    }
+    if (data[_keyGoldCalculatorData] is String) {
+      await prefs.setString(_keyGoldCalculatorData, data[_keyGoldCalculatorData]);
+    }
+
+    // Locale / theme.
+    if (data[_keyLocaleChoice] is int) {
+      await prefs.setInt(_keyLocaleChoice, data[_keyLocaleChoice]);
+    }
+    if (data[_keyThemeChoice] is int) {
+      await prefs.setInt(_keyThemeChoice, data[_keyThemeChoice]);
+    }
+
+    // Clean up any legacy keys that may have come from an older export.
+    for (final key in [..._legacyCalculatorKeys, ..._legacyGoldCalculatorKeys]) {
+      await prefs.remove(key);
     }
   }
 }

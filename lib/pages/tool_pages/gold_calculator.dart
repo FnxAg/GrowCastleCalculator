@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
 import 'package:grow_castle_calculator/pages/calculator_page.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:grow_castle_calculator/utils/number_utils.dart';
 import 'package:grow_castle_calculator/utils/text_input_formatter.dart';
 import 'package:grow_castle_calculator/widgets/collapsible_section.dart';
-import 'package:grow_castle_calculator/widgets/expanded_text.dart';
 
 class GoldCalculator extends StatefulWidget {
   const GoldCalculator({super.key});
@@ -18,16 +18,11 @@ class GoldCalculator extends StatefulWidget {
 
 class _GoldCalculatorState extends State<GoldCalculator>
     with WidgetsBindingObserver {
-  // ── Layout constants ───────────────────────────────────────────────────
-
-  static const int textExpandedFlex = 15;
-  static const int sizedBoxExpandedFlex = 1;
-
   // ── State ──────────────────────────────────────────────────────────────
 
   List<bool> _isExpanded = List.filled(4, true);
   List<int> _waveValue = [1000000, 40000];
-  List<dynamic> _formField = List.filled(9, 0);
+  List<num> _formField = List<num>.filled(9, 0);
   List<bool> _checkboxForm = List.filled(4, true);
   bool _isLoading = true;
 
@@ -78,31 +73,28 @@ class _GoldCalculatorState extends State<GoldCalculator>
 
   Future<void> _loadData() async {
     final data = await PreferencesService.loadGoldCalculatorData();
-    _checkboxForm = (data['gc_checkboxForm'] as List<String>)
-        .map((e) => e == 'true')
-        .toList();
-    if (_checkboxForm.length < 4) {
-      _checkboxForm = List.filled(4, true);
-    }
-    _formField = (data['gc_formField'] as List<String>)
-        .map((e) => int.tryParse(e) != null ? int.parse(e) : double.parse(e))
-        .toList();
-    if (_formField.length < 9) {
-      _formField = List.filled(9, 0);
-    }
-    _isExpanded = (data['gc_isExpanded'] as List<String>)
-        .map((e) => e == 'true')
-        .toList();
-    if (_isExpanded.length < 4) {
-      _isExpanded = List.filled(4, true);
-    }
+    _checkboxForm = _padList(data.checkboxForm, true, 4);
+    _formField = _padList(data.formField, 0, 9);
+    _isExpanded = _padList(data.isExpanded, true, 4);
     _syncControllers();
     setState(() => _isLoading = false);
   }
 
+  static List<T> _padList<T>(List<T> list, T fillValue, int minLength) {
+    if (list.length >= minLength) return List<T>.from(list);
+    return [...list, for (int i = list.length; i < minLength; i++) fillValue];
+  }
+
+  /// Formats a [num] for display, stripping the trailing `.0` for whole numbers.
+  String _formatNumDisplay(num value) {
+    return value == value.truncateToDouble()
+        ? value.truncate().toString()
+        : value.toString();
+  }
+
   void _syncControllers() {
     for (int i = 0; i < _formFieldControllers.length; i++) {
-      _formFieldControllers[i].text = _formField[i].toString();
+      _formFieldControllers[i].text = _formatNumDisplay(_formField[i]);
     }
     _syncWaveControllers();
   }
@@ -114,7 +106,8 @@ class _GoldCalculatorState extends State<GoldCalculator>
             CalculatorPage.waveValue[i].toString();
       }
     } else {
-      _waveValue = (CalculatorPage.waveValue.toList())..[0] = CalculatorPage.waveValue[0];
+      _waveValue = (CalculatorPage.waveValue.toList())
+        ..[0] = CalculatorPage.waveValue[0];
       for (int i = 0; i < _waveValueControllers.length; i++) {
         _waveValueControllers[i].text = _waveValue[i].toString();
       }
@@ -123,34 +116,67 @@ class _GoldCalculatorState extends State<GoldCalculator>
 
   Future<void> _saveData() async {
     await PreferencesService.saveGoldCalculatorData(
-      gcWaveValue: _waveValue.map((e) => e.toString()).toList(),
-      gcFormField: _formField.map((e) => e.toString()).toList(),
-      gcCheckboxForm: _checkboxForm.map((e) => e.toString()).toList(),
-      gcIsExpanded: _isExpanded.map((e) => e.toString()).toList(),
+      GoldCalculatorData(
+        waveValue: _waveValue,
+        formField: _formField,
+        checkboxForm: _checkboxForm,
+        isExpanded: _isExpanded,
+      ),
     );
   }
 
   // ── Build helpers ──────────────────────────────────────────────────────
 
-  Widget _infoRowPair(
-    String name1,
-    String variable1,
-    String name2,
-    String variable2,
-  ) {
-    return Row(
-      spacing: 12,
-      children: [
-        Expanded(
-          flex: textExpandedFlex,
-          child: ExpandedText(name: name1, variable: variable1),
-        ),
-        const Expanded(flex: sizedBoxExpandedFlex, child: SizedBox()),
-        Expanded(
-          flex: textExpandedFlex,
-          child: ExpandedText(name: name2, variable: variable2),
-        ),
-      ],
+  Widget _dataRow(
+    BuildContext context, {
+    required String leftLabel,
+    required String leftValue,
+    required String rightLabel,
+    required String rightValue,
+  }) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: _labelValuePair(leftLabel, leftValue, theme),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _labelValuePair(rightLabel, rightValue, theme),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _labelValuePair(String label, String value, ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -159,8 +185,9 @@ class _GoldCalculatorState extends State<GoldCalculator>
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
-    // Parse fields from controllers
+    // Parse fields
     final f0 = convertStringToDouble(_formFieldControllers[0].text);
     final f1 = convertStringToDouble(_formFieldControllers[1].text);
     final f2 = convertStringToDouble(_formFieldControllers[2].text);
@@ -218,387 +245,543 @@ class _GoldCalculatorState extends State<GoldCalculator>
           onTap: () => FocusScope.of(context).unfocus(),
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: ListView(
-                    children: [
-                      Column(
-                        spacing: 8,
-                        children: [
-                          // ── Wave input row ────────────────────────────
-                          Row(
-                            spacing: 8,
-                            children: [
-                              Expanded(
-                                flex: 2,
-                                child: Column(
-                                  children: [
-                                    Text(loc.inherit),
-                                    Checkbox(
-                                      value: _checkboxForm[0],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _checkboxForm[0] = value!;
-                                          _syncWaveControllers();
-                                        });
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Expanded(
-                                flex: 4,
-                                child: TextField(
-                                  controller: _waveValueControllers[0],
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  readOnly: _checkboxForm[0],
-                                  decoration: InputDecoration(
-                                    labelText: loc.currentWave,
-                                    hintText: loc.enterCurrentWave,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                  onChanged: (value) => setState(() {
-                                    _waveValue[0] = convertStringToInt(value);
-                                  }),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 4,
-                                child: TextField(
-                                  controller: _waveValueControllers[1],
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.digitsOnly,
-                                  ],
-                                  readOnly: _checkboxForm[0],
-                                  decoration: InputDecoration(
-                                    labelText: loc.seasonalWave,
-                                    hintText: loc.enterSeasonalWave,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                  onChanged: (value) => setState(() {
-                                    _waveValue[1] = convertStringToInt(value);
-                                  }),
-                                ),
-                              ),
-                            ],
+              : CustomScrollView(
+                  slivers: [
+                    // ── Wave input section ───────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                        child: Card(
+                          elevation: 0,
+                          color: theme.colorScheme.surfaceContainerHighest,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
-
-                          // ── GAB cost / Total gold per day ─────────────
-                          _infoRowPair(
-                            loc.gabCost,
-                            decreaseNumSize(gabCost.toDouble(), context),
-                            loc.goldDay,
-                            decreaseNumSize(totalGoldPerDay, context),
-                          ),
-
-                          // ── Game speed / Jump & Wave / Wave time ──────
-                          Row(
-                            spacing: 8,
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _formFieldControllers[0],
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [FormatterWithMinusAndDot()],
-                                  decoration: InputDecoration(
-                                    labelText: loc.gameSpeed,
-                                    hintText: loc.enterGameSpeed,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                  onChanged: (value) => setState(() {
-                                    _formField[0] =
-                                        convertStringToDouble(value);
-                                  }),
-                                ),
-                              ),
-                              Expanded(
-                                child: TextField(
-                                  controller: _formFieldControllers[1],
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [FormatterWithMinusAndDot()],
-                                  decoration: InputDecoration(
-                                    labelText: loc.jumpAndWave,
-                                    hintText: loc.enterWave,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                  onChanged: (value) => setState(() {
-                                    _formField[1] =
-                                        convertStringToDouble(value);
-                                  }),
-                                ),
-                              ),
-                              Expanded(
-                                child: TextField(
-                                  controller: _formFieldControllers[2],
-                                  keyboardType: TextInputType.number,
-                                  inputFormatters: [FormatterWithMinusAndDot()],
-                                  decoration: InputDecoration(
-                                    labelText: loc.waveTime,
-                                    hintText: loc.enterWaveTime,
-                                    border: const OutlineInputBorder(),
-                                  ),
-                                  onChanged: (value) => setState(() {
-                                    _formField[2] =
-                                        convertStringToDouble(value);
-                                  }),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text('${loc.wph} ${wph.toStringAsFixed(2)}'),
-                            ],
-                          ),
-
-                          // ── Infinite Colony section ────────────────────
-                          CollapsibleSection(
-                            title: loc.infiniteColony,
-                            isExpanded: _isExpanded[0],
-                            onToggle: () =>
-                                setState(() => _isExpanded[0] = !_isExpanded[0]),
-                            child: Column(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Row(
                               spacing: 8,
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        loc.inherit,
+                                        style: theme.textTheme.labelSmall,
+                                      ),
+                                      Checkbox(
+                                        value: _checkboxForm[0],
+                                        visualDensity: VisualDensity.compact,
+                                        materialTapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _checkboxForm[0] = value!;
+                                            _syncWaveControllers();
+                                          });
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 4,
+                                  child: TextField(
+                                    controller: _waveValueControllers[0],
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    readOnly: _checkboxForm[0],
+                                    decoration: InputDecoration(
+                                      labelText: loc.currentWave,
+                                      hintText: loc.enterCurrentWave,
+                                      border: const OutlineInputBorder(),
+                                      isDense: true,
+                                    ),
+                                    onChanged: (v) => setState(() {
+                                      _waveValue[0] = convertStringToInt(v);
+                                    }),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 4,
+                                  child: TextField(
+                                    controller: _waveValueControllers[1],
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                    ],
+                                    readOnly: _checkboxForm[0],
+                                    decoration: InputDecoration(
+                                      labelText: loc.seasonalWave,
+                                      hintText: loc.enterSeasonalWave,
+                                      border: const OutlineInputBorder(),
+                                      isDense: true,
+                                    ),
+                                    onChanged: (v) => setState(() {
+                                      _waveValue[1] = convertStringToInt(v);
+                                    }),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Top-line summary ─────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 6, 12, 0),
+                        child: _dataRow(
+                          context,
+                          leftLabel: loc.gabCost,
+                          leftValue: decreaseNumSize(gabCost.toDouble(), context),
+                          rightLabel: loc.goldDay,
+                          rightValue: decreaseNumSize(totalGoldPerDay, context),
+                        ),
+                      ),
+                    ),
+
+                    // ── Game speed / Wave config ─────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+                        child: Card(
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
+                              color: theme.colorScheme.outlineVariant
+                                  .withAlpha(80),
+                            ),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              spacing: 6,
                               children: [
                                 Row(
                                   spacing: 8,
                                   children: [
                                     Expanded(
                                       child: TextField(
-                                        controller: _formFieldControllers[3],
+                                        controller: _formFieldControllers[0],
                                         keyboardType: TextInputType.number,
                                         inputFormatters: [
-                                          FilteringTextInputFormatter.digitsOnly,
+                                          FormatterWithMinusAndDot(),
                                         ],
                                         decoration: InputDecoration(
-                                          labelText: loc.icLevel,
-                                          hintText: loc.enterLV,
+                                          labelText: loc.gameSpeed,
+                                          hintText: loc.enterGameSpeed,
                                           border: const OutlineInputBorder(),
+                                          isDense: true,
                                         ),
-                                        onChanged: (value) => setState(() {
-                                          _formField[3] =
-                                              convertStringToInt(value);
+                                        onChanged: (v) => setState(() {
+                                          _formField[0] =
+                                              convertStringToDouble(v);
                                         }),
                                       ),
                                     ),
-                                    Column(
-                                      children: [
-                                        Text(loc.ironWheel),
-                                        Checkbox(
-                                          value: _checkboxForm[1],
-                                          onChanged: (value) => setState(() {
-                                            _checkboxForm[1] = value ?? false;
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _formFieldControllers[1],
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FormatterWithMinusAndDot(),
+                                        ],
+                                        decoration: InputDecoration(
+                                          labelText: loc.jumpAndWave,
+                                          hintText: loc.enterWave,
+                                          border: const OutlineInputBorder(),
+                                          isDense: true,
+                                        ),
+                                        onChanged: (v) => setState(() {
+                                          _formField[1] =
+                                              convertStringToDouble(v);
+                                        }),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _formFieldControllers[2],
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: [
+                                          FormatterWithMinusAndDot(),
+                                        ],
+                                        decoration: InputDecoration(
+                                          labelText: loc.waveTime,
+                                          hintText: loc.enterWaveTime,
+                                          border: const OutlineInputBorder(),
+                                          isDense: true,
+                                        ),
+                                        onChanged: (v) => setState(() {
+                                          _formField[2] =
+                                              convertStringToDouble(v);
+                                        }),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    '${loc.wph} ${wph.toStringAsFixed(2)}',
+                                    style: theme.textTheme.labelMedium
+                                        ?.copyWith(
+                                      color: theme.colorScheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // ── Infinite Colony ──────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CollapsibleSection(
+                              title: loc.infiniteColony,
+                              isExpanded: _isExpanded[0],
+                              onToggle: () => setState(
+                                  () => _isExpanded[0] = !_isExpanded[0]),
+                              showIcon: true,
+                              child: Column(
+                                spacing: 6,
+                                children: [
+                                  Row(
+                                    spacing: 8,
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller:
+                                              _formFieldControllers[3],
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
+                                          decoration: InputDecoration(
+                                            labelText: loc.icLevel,
+                                            hintText: loc.enterLV,
+                                            border:
+                                                const OutlineInputBorder(),
+                                            isDense: true,
+                                          ),
+                                          onChanged: (v) => setState(() {
+                                            _formField[3] =
+                                                convertStringToInt(v);
                                           }),
                                         ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  spacing: 8,
-                                  children: [
-                                    Expanded(
-                                      flex: 4,
-                                      child: TextField(
-                                        controller: _formFieldControllers[4],
-                                        keyboardType: TextInputType.number,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter.digitsOnly,
-                                        ],
-                                        decoration: InputDecoration(
-                                          labelText: loc.extraColonyCD,
-                                          hintText: loc.enterLV,
-                                          border: const OutlineInputBorder(),
-                                        ),
-                                        onChanged: (value) => setState(() {
-                                          _formField[4] =
-                                              convertStringToInt(value);
-                                        }),
                                       ),
-                                    ),
-                                    Expanded(
-                                      flex: 4,
-                                      child: TextField(
-                                        controller: _formFieldControllers[5],
-                                        keyboardType: TextInputType.number,
-                                        inputFormatters: [
-                                          FilteringTextInputFormatter.digitsOnly,
+                                      Column(
+                                        children: [
+                                          Text(
+                                            loc.ironWheel,
+                                            style: theme.textTheme.labelSmall,
+                                          ),
+                                          Checkbox(
+                                            value: _checkboxForm[1],
+                                            visualDensity:
+                                                VisualDensity.compact,
+                                            materialTapTargetSize:
+                                                MaterialTapTargetSize
+                                                    .shrinkWrap,
+                                            onChanged: (v) => setState(() {
+                                              _checkboxForm[1] = v ?? false;
+                                            }),
+                                          ),
                                         ],
-                                        decoration: InputDecoration(
-                                          labelText: loc.extraColonyGold,
-                                          hintText: loc.enterLV,
-                                          border: const OutlineInputBorder(),
-                                        ),
-                                        onChanged: (value) => setState(() {
-                                          _formField[5] =
-                                              convertStringToInt(value);
-                                        }),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          _infoRowPair(
-                            loc.secCart,
-                            '${secondsPerCart.toStringAsFixed(2)}s',
-                            loc.goldCart,
-                            decreaseNumSize(goldPerCart, context),
-                          ),
-                          _infoRowPair(
-                            loc.cartHour,
-                            cartsPerHour.toStringAsFixed(2),
-                            loc.icRatio,
-                            icRatio.toStringAsFixed(2),
-                          ),
-                          _infoRowPair(
-                            loc.goldHour,
-                            decreaseNumSize(goldPerCart * cartsPerHour, context),
-                            loc.goldDay,
-                            decreaseNumSize(colonyGoldPerDay, context),
-                          ),
-
-                          // ── Gold Auto Battle section ───────────────────
-                          CollapsibleSection(
-                            title: loc.goldAutoBattle,
-                            isExpanded: _isExpanded[1],
-                            onToggle: () =>
-                                setState(() => _isExpanded[1] = !_isExpanded[1]),
-                            child: Row(
-                              spacing: 8,
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: _formFieldControllers[6],
-                                    keyboardType: TextInputType.number,
-                                    decoration: InputDecoration(
-                                      labelText: loc.gabHourDay,
-                                      hintText: loc.enterHour,
-                                      border: const OutlineInputBorder(),
-                                    ),
-                                    onChanged: (value) => setState(() {
-                                      _formField[6] =
-                                          convertStringToDouble(value);
-                                    }),
+                                    ],
                                   ),
-                                ),
-                                Expanded(
-                                  child: TextField(
-                                    controller: _formFieldControllers[7],
-                                    keyboardType: TextInputType.number,
-                                    decoration: InputDecoration(
-                                      labelText: loc.gabProfit,
-                                      hintText: loc.enterProfit,
-                                      border: const OutlineInputBorder(),
-                                    ),
-                                    onChanged: (value) => setState(() {
-                                      _formField[7] =
-                                          convertStringToDouble(value);
-                                    }),
+                                  Row(
+                                    spacing: 8,
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller:
+                                              _formFieldControllers[4],
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
+                                          decoration: InputDecoration(
+                                            labelText: loc.extraColonyCD,
+                                            hintText: loc.enterLV,
+                                            border:
+                                                const OutlineInputBorder(),
+                                            isDense: true,
+                                          ),
+                                          onChanged: (v) => setState(() {
+                                            _formField[4] =
+                                                convertStringToInt(v);
+                                          }),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: TextField(
+                                          controller:
+                                              _formFieldControllers[5],
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly,
+                                          ],
+                                          decoration: InputDecoration(
+                                            labelText: loc.extraColonyGold,
+                                            hintText: loc.enterLV,
+                                            border:
+                                                const OutlineInputBorder(),
+                                            isDense: true,
+                                          ),
+                                          onChanged: (v) => setState(() {
+                                            _formField[5] =
+                                                convertStringToInt(v);
+                                          }),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-
-                          _infoRowPair(
-                            loc.goldWave,
-                            decreaseNumSize(gabBenefitGoldPerWave, context),
-                            loc.goldDay,
-                            decreaseNumSize(gabBenefitGoldPerDay, context),
-                          ),
-
-                          // ── Time Auto Battle section ───────────────────
-                          CollapsibleSection(
-                            title: loc.timeAutoBattle,
-                            isExpanded: _isExpanded[2],
-                            onToggle: () =>
-                                setState(() => _isExpanded[2] = !_isExpanded[2]),
-                            child: Row(
-                              spacing: 8,
-                              children: [
-                                Expanded(
-                                  child: TextField(
-                                    controller: _formFieldControllers[8],
-                                    keyboardType: TextInputType.number,
-                                    decoration: InputDecoration(
-                                      labelText: loc.tabHourDay,
-                                      hintText: loc.enterHour,
-                                      border: const OutlineInputBorder(),
-                                    ),
-                                    onChanged: (value) => setState(() {
-                                      _formField[8] =
-                                          convertStringToDouble(value);
-                                    }),
-                                  ),
-                                ),
-                              ],
+                            _dataRow(
+                              context,
+                              leftLabel: loc.secCart,
+                              leftValue:
+                                  '${secondsPerCart.toStringAsFixed(2)}s',
+                              rightLabel: loc.goldCart,
+                              rightValue:
+                                  decreaseNumSize(goldPerCart, context),
                             ),
-                          ),
-
-                          _infoRowPair(
-                            loc.goldWave,
-                            decreaseNumSize(tabGoldPerWave, context),
-                            loc.goldDay,
-                            decreaseNumSize(tabGoldPerDay, context),
-                          ),
-
-                          // ── Golden Tree section ────────────────────────
-                          CollapsibleSection(
-                            title: loc.goldenTree,
-                            isExpanded: true,
-                            onToggle: () => setState(
-                                () => _checkboxForm[2] = !_checkboxForm[2]),
-                            trailing: Checkbox(
-                              value: _checkboxForm[2],
-                              onChanged: (value) => setState(() {
-                                _checkboxForm[2] = value ?? false;
-                              }),
+                            _dataRow(
+                              context,
+                              leftLabel: loc.cartHour,
+                              leftValue:
+                                  cartsPerHour.toStringAsFixed(2),
+                              rightLabel: loc.icRatio,
+                              rightValue:
+                                  icRatio.toStringAsFixed(2),
                             ),
-                            child: const SizedBox.shrink(),
-                          ),
-
-                          _infoRowPair(
-                            loc.goldHour,
-                            decreaseNumSize(goldenTreeGoldPerHour, context),
-                            loc.goldDay,
-                            decreaseNumSize(goldenTreeGoldPerDay, context),
-                          ),
-
-                          // ── Seasonal Colony section ────────────────────
-                          CollapsibleSection(
-                            title: loc.seasonalColony,
-                            isExpanded: true,
-                            onToggle: () => setState(
-                                () => _checkboxForm[3] = !_checkboxForm[3]),
-                            trailing: Checkbox(
-                              value: _checkboxForm[3],
-                              onChanged: (value) => setState(() {
-                                _checkboxForm[3] = value ?? false;
-                              }),
+                            _dataRow(
+                              context,
+                              leftLabel: loc.goldHour,
+                              leftValue: decreaseNumSize(
+                                  goldPerCart * cartsPerHour, context),
+                              rightLabel: loc.goldDay,
+                              rightValue: decreaseNumSize(
+                                  colonyGoldPerDay, context),
                             ),
-                            child: const SizedBox.shrink(),
-                          ),
-
-                          _infoRowPair(
-                            loc.goldHour,
-                            decreaseNumSize(
-                                seasonalColonyGoldPerHour.toDouble(), context),
-                            loc.goldDay,
-                            decreaseNumSize(
-                                seasonalColonyGoldPerDay.toDouble(), context),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+
+                    // ── Gold Auto Battle ─────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CollapsibleSection(
+                              title: loc.goldAutoBattle,
+                              isExpanded: _isExpanded[1],
+                              onToggle: () => setState(
+                                  () => _isExpanded[1] = !_isExpanded[1]),
+                              showIcon: true,
+                              child: Row(
+                                spacing: 8,
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller:
+                                          _formFieldControllers[6],
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        labelText: loc.gabHourDay,
+                                        hintText: loc.enterHour,
+                                        border:
+                                            const OutlineInputBorder(),
+                                        isDense: true,
+                                      ),
+                                      onChanged: (v) => setState(() {
+                                        _formField[6] =
+                                            convertStringToDouble(v);
+                                      }),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: TextField(
+                                      controller:
+                                          _formFieldControllers[7],
+                                      keyboardType: TextInputType.number,
+                                      decoration: InputDecoration(
+                                        labelText: loc.gabProfit,
+                                        hintText: loc.enterProfit,
+                                        border:
+                                            const OutlineInputBorder(),
+                                        isDense: true,
+                                      ),
+                                      onChanged: (v) => setState(() {
+                                        _formField[7] =
+                                            convertStringToDouble(v);
+                                      }),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            _dataRow(
+                              context,
+                              leftLabel: loc.goldWave,
+                              leftValue: decreaseNumSize(
+                                  gabBenefitGoldPerWave, context),
+                              rightLabel: loc.goldDay,
+                              rightValue: decreaseNumSize(
+                                  gabBenefitGoldPerDay, context),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // ── Time Auto Battle ─────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CollapsibleSection(
+                              title: loc.timeAutoBattle,
+                              isExpanded: _isExpanded[2],
+                              onToggle: () => setState(
+                                  () => _isExpanded[2] = !_isExpanded[2]),
+                              showIcon: true,
+                              child: TextField(
+                                controller: _formFieldControllers[8],
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: loc.tabHourDay,
+                                  hintText: loc.enterHour,
+                                  border: const OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                                onChanged: (v) => setState(() {
+                                  _formField[8] =
+                                      convertStringToDouble(v);
+                                }),
+                              ),
+                            ),
+                            _dataRow(
+                              context,
+                              leftLabel: loc.goldWave,
+                              leftValue: decreaseNumSize(
+                                  tabGoldPerWave, context),
+                              rightLabel: loc.goldDay,
+                              rightValue: decreaseNumSize(
+                                  tabGoldPerDay, context),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // ── Golden Tree ──────────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CollapsibleSection(
+                              title: loc.goldenTree,
+                              isExpanded: false,
+                              onToggle: () => setState(() =>
+                                  _checkboxForm[2] = !_checkboxForm[2]),
+                              showIcon: false,
+                              trailing: Checkbox(
+                                value: _checkboxForm[2],
+                                visualDensity: VisualDensity.compact,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                onChanged: (v) => setState(() {
+                                  _checkboxForm[2] = v ?? false;
+                                }),
+                              ),
+                              child: const SizedBox.shrink(),
+                            ),
+                            _dataRow(
+                              context,
+                              leftLabel: loc.goldHour,
+                              leftValue: decreaseNumSize(
+                                  goldenTreeGoldPerHour, context),
+                              rightLabel: loc.goldDay,
+                              rightValue: decreaseNumSize(
+                                  goldenTreeGoldPerDay, context),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // ── Seasonal Colony ──────────────────────────────────
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CollapsibleSection(
+                              title: loc.seasonalColony,
+                              isExpanded: false,
+                              onToggle: () => setState(() =>
+                                  _checkboxForm[3] = !_checkboxForm[3]),
+                              showIcon: false,
+                              trailing: Checkbox(
+                                value: _checkboxForm[3],
+                                visualDensity: VisualDensity.compact,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                onChanged: (v) => setState(() {
+                                  _checkboxForm[3] = v ?? false;
+                                }),
+                              ),
+                              child: const SizedBox.shrink(),
+                            ),
+                            _dataRow(
+                              context,
+                              leftLabel: loc.goldHour,
+                              leftValue: decreaseNumSize(
+                                  seasonalColonyGoldPerHour.toDouble(),
+                                  context),
+                              rightLabel: loc.goldDay,
+                              rightValue: decreaseNumSize(
+                                  seasonalColonyGoldPerDay.toDouble(),
+                                  context),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Bottom padding
+                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                  ],
                 ),
         ),
       ),

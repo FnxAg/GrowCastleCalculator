@@ -19,7 +19,7 @@ class DataExportService {
       final data = await PreferencesService.exportAllData();
 
       final exportMap = {
-        'version': 1,
+        'version': 2,
         'app': 'grow_castle_calculator',
         'exportTime': DateTime.now().toIso8601String(),
         'data': data,
