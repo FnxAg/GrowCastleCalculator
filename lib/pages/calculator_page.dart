@@ -1,149 +1,39 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator/services/preferences_service.dart';
+import 'package:grow_castle_calculator/utils/game_calculations.dart';
+import 'package:grow_castle_calculator/utils/number_utils.dart';
+import 'package:grow_castle_calculator/widgets/season_progress_dialog.dart';
 
 class CalculatorPage extends StatefulWidget {
   const CalculatorPage({super.key});
-  static const seasonHours = 120;
-  static const hellModeSeasonHours = 168;
-  static const seasonalColonyHours = 240;
 
-  static List<int> waveValue = List.generate(
-    2,
-    (index) => 1000000 - index * 960000,
-  );
+  static const int seasonHours = 120;
+  static const int hellModeSeasonHours = 168;
+  static const int seasonalColonyHours = 240;
 
-  static double heroLevelSpendGold(int level) {
-    if (level <= 0) return 0;
-
-    const thresholds = [
-      10000,
-      5000,
-      200,
-      180,
-      160,
-      140,
-      120,
-      100,
-      80,
-      60,
-      40,
-      20,
-      1,
-    ];
-    const baseGold = [
-      187458432500,
-      37468432500,
-      35632500,
-      26157500,
-      18530000,
-      12530000,
-      7997500,
-      4712500,
-      2475000,
-      1085000,
-      342500,
-      47500,
-      0,
-    ];
-    const baseMultiplier = [
-      50000000,
-      20000000,
-      600000,
-      450000,
-      360000,
-      280000,
-      210000,
-      150000,
-      100000,
-      60000,
-      30000,
-      10000,
-      250,
-    ];
-    const increment = [
-      5000,
-      4000,
-      3000,
-      2500,
-      2250,
-      2000,
-      1750,
-      1500,
-      1250,
-      1000,
-      750,
-      500,
-      250,
-    ];
-
-    for (int i = 0; i < thresholds.length; i++) {
-      if (level > thresholds[i]) {
-        final diff = level - thresholds[i];
-        return ((baseMultiplier[i] * 2 + increment[i] * (diff - 1)) /
-                2 *
-                diff) +
-            baseGold[i];
-      }
-    }
-
-    return 0;
-  }
+  /// Shared wave values — also read by [GoldCalculator] for inheritance.
+  static List<int> waveValue = [1000000, 40000];
 
   @override
   State<CalculatorPage> createState() => _CalculatorPageState();
 }
 
-int _convertStringToInt(String value) {
-  return int.tryParse(value) ?? 0;
-}
-
-String decreaseNumSize(double gold, BuildContext context) {
-  const suffixes = ['K', 'M', 'B', 'T', 'P', 'E',];
-  const suffixesZhCn = ['万', '亿', '万亿', '亿亿', '万亿亿', '亿亿亿'];
-  double value = gold;
-  int index = -1;
-
-  while (value >= 1000000 && index < suffixes.length - 1) {
-    value /= 1000;
-    index++;
-  }
-
-  String result;
-  if (index == -1) {
-    result = gold.toStringAsFixed(0);
-  } else {
-    result = '${value.toStringAsFixed(0)}${suffixes[index]}';
-  }
-
-  final locale = Localizations.localeOf(context);
-  if (locale.languageCode == 'zh') {
-    double zhValue = gold;
-    int zhIndex = -1;
-
-    while (zhValue >= 10000 && zhIndex < suffixesZhCn.length - 1) {
-      zhValue /= 10000;
-      zhIndex++;
-    }
-
-    String zhResult;
-    if (zhIndex == -1) {
-      zhResult = gold.toStringAsFixed(0);
-    } else {
-      zhResult = '${zhValue.toStringAsFixed(2)}${suffixesZhCn[zhIndex]}';
-    }
-
-    result = '$zhResult | $result';
-  }
-
-  return result;
-}
-
 class _CalculatorPageState extends State<CalculatorPage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
-  List<String> _targetName = List.filled(_maxFormLimit - _defaultForm, '');
+  // ── Form limits ────────────────────────────────────────────────────────
+
+  static const int _minFormLimit = 2;
+  static const int _maxFormLimit = 20;
+  static const int _defaultFormCount = 2;
+
+  // ── State ──────────────────────────────────────────────────────────────
+
+  int _dynamicFormNum = 7;
+  List<String> _targetName = [];
   List<int> _targetLevel = List.filled(_maxFormLimit, 10000);
   List<bool> _targetCheckbox = List.filled(_maxFormLimit, true);
   late List<double> _targetGold;
@@ -151,142 +41,50 @@ class _CalculatorPageState extends State<CalculatorPage>
   late double _totalGold;
   late String _totalGoldString;
 
+  DateTime _now = DateTime.now();
   late Timer _timer;
 
-  void _updateComputedValues(BuildContext context) {
-    _targetGold = List.generate(_maxFormLimit, (index) {
-      if (index == 0) {
-        return _targetLevel[0] * _targetLevel[0] * 1250.0;
-      } else if (index == 1) {
-        return _targetLevel[1] * _targetLevel[1] * 500.0;
-      } else {
-        return CalculatorPage.heroLevelSpendGold(_targetLevel[index]);
-      }
-    });
-    _targetGoldString =
-        _targetGold.map((g) => decreaseNumSize(g, context)).toList();
-    _totalGold = _targetGold
-        .asMap()
-        .entries
-        .where(
-          (entry) => entry.key < _dynamicFormNum && _targetCheckbox[entry.key],
-        )
-        .map((entry) => entry.value)
-        .fold<double>(0, (a, b) => a + b);
-    _totalGoldString = decreaseNumSize(_totalGold, context);
-  }
+  // ── Controllers ────────────────────────────────────────────────────────
 
-  int _dynamicFormNum = 7;
-  static const int _minFormLimit = 2;
-  static const int _maxFormLimit = 20;
-  static const int _defaultForm = 2;
+  final List<TextEditingController> _waveValueControllers =
+      List.generate(2, (_) => TextEditingController());
+
+  final List<TextEditingController> _targetNameControllers =
+      List.generate(_maxFormLimit - _defaultFormCount, (_) => TextEditingController());
+
+  final List<TextEditingController> _targetLevelControllers =
+      List.generate(_maxFormLimit, (_) => TextEditingController());
+
+  final List<TextEditingController> _defaultFormNameControllers =
+      List.generate(_defaultFormCount, (_) => TextEditingController());
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────
 
   @override
   bool get wantKeepAlive => true;
-
-  Future<void> loadCalculatorData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _dynamicFormNum = prefs.getInt('dynamicFormNum') ?? 7;
-      CalculatorPage.waveValue =
-          prefs.getStringList('waveValue')?.map(int.parse).toList() ??
-          [1000000, 40000];
-      _targetName =
-          prefs.getStringList('targetName') ??
-          List.filled(_maxFormLimit - _defaultForm, '');
-      _targetLevel =
-          prefs.getStringList('targetLevel')?.map(int.parse).toList() ??
-          List.filled(_maxFormLimit, 10000);
-      _targetCheckbox =
-          prefs.getStringList('targetCheckbox')?.map(bool.parse).toList() ??
-          List.filled(_maxFormLimit, true);
-      for (int i = 0; i < _waveValueControllers.length; i++) {
-        _waveValueControllers[i].text = CalculatorPage.waveValue[i].toString();
-      }
-      for (int i = 0; i < _maxFormLimit; i++) {
-        _targetLevelControllers[i].text = _targetLevel[i].toString();
-      }
-      for (int i = 0; i < _maxFormLimit - _defaultForm; i++) {
-        _targetNameControllers[i].text = _targetName[i];
-      }
-    });
-  }
-
-  Future<void> _saveCalculatorData() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('dynamicFormNum', _dynamicFormNum);
-    prefs.setStringList(
-      'waveValue',
-      CalculatorPage.waveValue.map((e) => e.toString()).toList(),
-    );
-    prefs.setStringList('targetName', _targetName);
-    prefs.setStringList(
-      'targetLevel',
-      _targetLevel.map((e) => e.toString()).toList(),
-    );
-    prefs.setStringList(
-      'targetCheckbox',
-      _targetCheckbox.map((e) => e.toString()).toList(),
-    );
-  }
-
-  Future<void> _clearCalculatorFormData() async {
-    setState(() {
-      for (var c in _waveValueControllers) {
-        c.text = '';
-      }
-      for (var c in _targetNameControllers) {
-        c.text = '';
-      }
-      for (var c in _targetLevelControllers) {
-        c.text = '';
-      }
-    });
-  }
-
-  DateTime now = DateTime.now();
-
-  final List<TextEditingController> _waveValueControllers = List.generate(
-    2,
-    (index) => TextEditingController(),
-  );
-  final List<TextEditingController> _targetNameControllers = List.generate(
-    _maxFormLimit - _defaultForm,
-    (index) => TextEditingController(),
-  );
-  final List<TextEditingController> _targetLevelControllers = List.generate(
-    _maxFormLimit,
-    (index) => TextEditingController(),
-  );
-  final List<TextEditingController> _defaultFormNameControllers = List.generate(
-    _defaultForm,
-    (index) => TextEditingController(),
-  );
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    loadCalculatorData();
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      setState(() {
-        now = DateTime.now();
-      });
+    _loadData();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      setState(() => _now = DateTime.now());
     });
   }
 
   @override
   void dispose() {
-    for (var c in _waveValueControllers) {
+    for (final c in _waveValueControllers) {
       c.dispose();
     }
-    for (var c in _targetNameControllers) {
+    for (final c in _targetNameControllers) {
       c.dispose();
     }
-    for (var c in _targetLevelControllers) {
+    for (final c in _targetLevelControllers) {
       c.dispose();
     }
-    for (var c in _defaultFormNameControllers) {
+    for (final c in _defaultFormNameControllers) {
       c.dispose();
     }
     _timer.cancel();
@@ -301,33 +99,109 @@ class _CalculatorPageState extends State<CalculatorPage>
         state == AppLifecycleState.detached ||
         state == AppLifecycleState.inactive) {
       FocusScope.of(context).unfocus();
-      _saveCalculatorData();
+      _saveData();
     } else if (state == AppLifecycleState.resumed) {
-      _saveCalculatorData();
+      _saveData();
     }
   }
+
+  // ── Data persistence ───────────────────────────────────────────────────
+
+  Future<void> _loadData() async {
+    final data = await PreferencesService.loadCalculatorData();
+    setState(() {
+      _dynamicFormNum = data['dynamicFormNum'] as int;
+      CalculatorPage.waveValue = (data['waveValue'] as List<String>)
+          .map(int.parse)
+          .toList();
+      _targetName = List<String>.from(data['targetName'] as List);
+      if (_targetName.length < _maxFormLimit - _defaultFormCount) {
+        _targetName = List.filled(_maxFormLimit - _defaultFormCount, '');
+      }
+      _targetLevel = (data['targetLevel'] as List<String>)
+          .map(int.parse)
+          .toList();
+      if (_targetLevel.length < _maxFormLimit) {
+        _targetLevel = List.filled(_maxFormLimit, 10000);
+      }
+      _targetCheckbox = (data['targetCheckbox'] as List<String>)
+          .map((e) => e == 'true')
+          .toList();
+      if (_targetCheckbox.length < _maxFormLimit) {
+        _targetCheckbox = List.filled(_maxFormLimit, true);
+      }
+      _syncControllers();
+    });
+  }
+
+  void _syncControllers() {
+    for (int i = 0; i < _waveValueControllers.length; i++) {
+      _waveValueControllers[i].text = CalculatorPage.waveValue[i].toString();
+    }
+    for (int i = 0; i < _maxFormLimit; i++) {
+      _targetLevelControllers[i].text = _targetLevel[i].toString();
+    }
+    for (int i = 0; i < _targetName.length; i++) {
+      _targetNameControllers[i].text = _targetName[i];
+    }
+  }
+
+  Future<void> _saveData() async {
+    await PreferencesService.saveCalculatorData(
+      dynamicFormNum: _dynamicFormNum,
+      waveValue: CalculatorPage.waveValue.map((e) => e.toString()).toList(),
+      targetName: _targetName,
+      targetLevel: _targetLevel.map((e) => e.toString()).toList(),
+      targetCheckbox: _targetCheckbox.map((e) => e.toString()).toList(),
+    );
+  }
+
+  Future<void> _clearFormData() async {
+    setState(() {
+      for (final c in _waveValueControllers) {
+        c.clear();
+      }
+      for (final c in _targetNameControllers) {
+        c.clear();
+      }
+      for (final c in _targetLevelControllers) {
+        c.clear();
+      }
+    });
+  }
+
+  // ── Computed values ────────────────────────────────────────────────────
+
+  void _updateComputedValues(BuildContext context) {
+    _targetGold = List.generate(_maxFormLimit, (i) {
+      return waveLevelSpendGold(_targetLevel[i], i);
+    });
+    _targetGoldString =
+        _targetGold.map((g) => decreaseNumSize(g, context)).toList();
+    _totalGold = _targetGold
+        .asMap()
+        .entries
+        .where((e) => e.key < _dynamicFormNum && _targetCheckbox[e.key])
+        .map((e) => e.value)
+        .fold<double>(0, (a, b) => a + b);
+    _totalGoldString = decreaseNumSize(_totalGold, context);
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     _updateComputedValues(context);
-    final nowMs = now.millisecondsSinceEpoch;
-    final seasonPassedMs = nowMs % 432000000 - 312900000 > 0
-        ? nowMs % 432000000 - 312900000
-        : nowMs % 432000000 + 119100000;
-    final hellModePassedMs = nowMs % 604800000 - 310800000 > 0
-        ? nowMs % 604800000 - 310800000
-        : nowMs % 604800000 + 294000000;
-    final seasonalColonyPassedMs = nowMs % 864000000 - 312600000 > 0
-        ? nowMs % 864000000 - 312600000
-        : nowMs % 864000000 + 551400000;
-    final seasonProgress = seasonPassedMs / 432000000;
-    final hellModeProgress = hellModePassedMs / 604800000;
-    final seasonalColonyProgress = seasonalColonyPassedMs / 864000000;
-    final castleDefault = AppLocalizations.of(context)!.castleDefault;
-    final taDefault = AppLocalizations.of(context)!.taDefault;
-    _defaultFormNameControllers[0].text = castleDefault;
-    _defaultFormNameControllers[1].text = taDefault;
+
+    final progress = calculateSeasonProgress(_now);
+
+    // Set default names for the two fixed rows (Castle / Town Archer).
+    _defaultFormNameControllers[0].text =
+        AppLocalizations.of(context)!.castleDefault;
+    _defaultFormNameControllers[1].text =
+        AppLocalizations.of(context)!.taDefault;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.calculator),
@@ -341,193 +215,22 @@ class _CalculatorPageState extends State<CalculatorPage>
                 InkWell(
                   onTap: () {
                     FocusManager.instance.primaryFocus?.unfocus();
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          title: Text(AppLocalizations.of(context)!.progress),
-                          content: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.seasonProgress,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      '${(seasonProgress * 100).toStringAsFixed(2)}%',
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.updateTime,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      DateTime.fromMillisecondsSinceEpoch(
-                                        (nowMs -
-                                                seasonPassedMs +
-                                                432000000),
-                                      ).toLocal().toString().split(".")[0],
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.timeTillReset,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      '${(CalculatorPage.seasonHours * (1 - seasonProgress)).toStringAsFixed(2)}h',
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                                Text('\n'),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.hellModeSeasonProgress,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      '${(hellModeProgress * 100).toStringAsFixed(2)}%',
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.updateTime,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      DateTime.fromMillisecondsSinceEpoch(
-                                        (nowMs -
-                                                hellModePassedMs +
-                                                604800000),
-                                      ).toLocal().toString().split(".")[0],
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.timeTillReset,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      '${(CalculatorPage.hellModeSeasonHours * (1 - hellModeProgress)).toStringAsFixed(2)}h',
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                                Text('\n'),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.seasonalColonyProgress,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      '${(seasonalColonyProgress * 100).toStringAsFixed(2)}%',
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(context)!.updateTime,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      DateTime.fromMillisecondsSinceEpoch(
-                                        (nowMs -
-                                                seasonalColonyPassedMs +
-                                                864000000),
-                                      ).toLocal().toString().split(".")[0],
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.timeTillReset,
-                                      textAlign: TextAlign.left,
-                                    ),
-                                    Text(
-                                      '${(CalculatorPage.seasonalColonyHours * (1 - seasonalColonyProgress)).toStringAsFixed(2)}h',
-                                      textAlign: TextAlign.right,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(
-                                AppLocalizations.of(context)!.confirm,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    );
+                    showSeasonProgressDialog(context, _now);
                   },
                   borderRadius: BorderRadius.circular(8),
                   child: Row(
                     children: [
-                      Icon(Icons.timer),
-                      SizedBox(width: 4),
+                      const Icon(Icons.timer),
+                      const SizedBox(width: 4),
                       Column(
                         children: [
-                          Text('${(seasonProgress * 100).toStringAsFixed(2)}%'),
-                          Text('${((CalculatorPage.seasonHours * (1 - seasonProgress) / 24).truncateToDouble() / 1).toStringAsFixed(0)}d ${((CalculatorPage.seasonHours * (1 - seasonProgress)) % 24).toStringAsFixed(0)}h'),
+                          Text(
+                            '${(progress.seasonProgress * 100).toStringAsFixed(2)}%',
+                          ),
+                          Text(
+                            '${((CalculatorPage.seasonHours * (1 - progress.seasonProgress) / 24).truncateToDouble() / 1).toStringAsFixed(0)}d '
+                            '${((CalculatorPage.seasonHours * (1 - progress.seasonProgress)) % 24).toStringAsFixed(0)}h',
+                          ),
                         ],
                       ),
                     ],
@@ -543,275 +246,269 @@ class _CalculatorPageState extends State<CalculatorPage>
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
-          children: [
-            Row(
-              spacing: 8,
-              children: [
-                Expanded(
-                  flex: 5,
-                  child: TextField(
-                    controller: _waveValueControllers[0],
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(context)!.currentWave,
-                      hintText: AppLocalizations.of(context)!.enterCurrentWave,
-                      border: const OutlineInputBorder(),
+            children: [
+              // ── Wave value inputs ──────────────────────────────────────
+              Row(
+                spacing: 8,
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: TextField(
+                      controller: _waveValueControllers[0],
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        labelText: AppLocalizations.of(context)!.currentWave,
+                        hintText:
+                            AppLocalizations.of(context)!.enterCurrentWave,
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          CalculatorPage.waveValue[0] =
+                              convertStringToInt(value);
+                        });
+                      },
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        CalculatorPage.waveValue[0] = _convertStringToInt(
-                          value,
-                        );
-                      });
-                    },
                   ),
-                ),
-                Expanded(
-                  flex: 5,
-                  child: TextField(
-                    controller: _waveValueControllers[1],
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      labelText: AppLocalizations.of(
-                        context,
-                      )!.currentSeasonalWave,
-                      hintText: AppLocalizations.of(
-                        context,
-                      )!.enterCurrentSeasonalWave,
-                      border: const OutlineInputBorder(),
+                  Expanded(
+                    flex: 5,
+                    child: TextField(
+                      controller: _waveValueControllers[1],
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        labelText:
+                            AppLocalizations.of(context)!.currentSeasonalWave,
+                        hintText: AppLocalizations.of(context)!
+                            .enterCurrentSeasonalWave,
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          CalculatorPage.waveValue[1] =
+                              convertStringToInt(value);
+                        });
+                      },
                     ),
-                    onChanged: (value) {
-                      setState(() {
-                        CalculatorPage.waveValue[1] = _convertStringToInt(
-                          value,
-                        );
-                      });
-                    },
                   ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 8,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.totalGold + _totalGoldString,
-                ),
-                Text(
-                  AppLocalizations.of(context)!.wph +
-                      (CalculatorPage.waveValue[1] /
-                              (CalculatorPage.seasonHours * seasonProgress))
-                          .toStringAsFixed(2),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 8,
-              children: [
-                Text(
-                  AppLocalizations.of(context)!.gp +
-                      (_totalGold /
-                              (0.5 *
-                                  (310 + CalculatorPage.waveValue[0] * 310) *
-                                  CalculatorPage.waveValue[0]) *
-                              100)
-                          .toStringAsFixed(2),
-                ),
-                Text(
-                  AppLocalizations.of(context)!.ratio +
-                      (_totalGold /
-                              (CalculatorPage.waveValue[0] *
-                                  CalculatorPage.waveValue[0]))
-                          .toStringAsFixed(2),
-                ),
-              ],
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _dynamicFormNum,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-                    child: Column(
-                      children: [
-                        Row(
-                          spacing: 8,
-                          children: [
-                            Expanded(
-                              flex: 1,
-                              child: Checkbox(
-                                value: _targetCheckbox[index],
-                                onChanged: (value) {
-                                  setState(() {
-                                    _targetCheckbox[index] = value ?? false;
-                                  });
-                                },
-                              ),
-                            ),
-                            Expanded(
-                              flex: 4,
-                              child: TextField(
-                                controller: index < _defaultForm
-                                    ? _defaultFormNameControllers[index]
-                                    : _targetNameControllers[index -
-                                          _defaultForm],
-                                readOnly: index < _defaultForm ? true : false,
-                                decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(
-                                    context,
-                                  )!.unitName(index + 1),
-                                  hintText: AppLocalizations.of(
-                                    context,
-                                  )!.enterUnitName,
-                                  border: const OutlineInputBorder(),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _targetName[index - _defaultForm] = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            Expanded(
-                              flex: 5,
-                              child: TextField(
-                                controller: _targetLevelControllers[index],
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                decoration: InputDecoration(
-                                  labelText: AppLocalizations.of(
-                                    context,
-                                  )!.unitLevel,
-                                  hintText: AppLocalizations.of(
-                                    context,
-                                  )!.enterUnitLevel,
-                                  border: const OutlineInputBorder(),
-                                ),
-                                onChanged: (value) {
-                                  setState(() {
-                                    _targetLevel[index] = _convertStringToInt(
-                                      value,
-                                    );
-                                  });
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          spacing: 8,
-                          children: [
-                            Text(_targetGoldString[index]),
-                            Text(
-                              '${_targetCheckbox[index] ? (_targetGold[index] / _totalGold * 100).toStringAsFixed(2) : 0.toStringAsFixed(2)}%',
-                            ),
-                            Text(
-                              (_targetLevel[index] /
-                                      CalculatorPage.waveValue[0])
-                                  .toStringAsFixed(3),
-                            ),
-                            Text(
-                              (CalculatorPage.waveValue[0] /
-                                      _targetLevel[index])
-                                  .toStringAsFixed(2),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                ],
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 8,
-              children: [
-                Tooltip(
-                  message: AppLocalizations.of(context)!.clearInputFields,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _clearCalculatorFormData();
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(12),
-                    ),
-                    child: const Icon(Icons.delete),
+
+              // ── Summary row ────────────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 8,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.totalGold + _totalGoldString,
                   ),
-                ),
-                Tooltip(
-                  message: AppLocalizations.of(context)!.loadData,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        loadCalculatorData();
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(12),
-                    ),
-                    child: const Icon(Icons.download),
+                  Text(
+                    AppLocalizations.of(context)!.wph +
+                        (CalculatorPage.waveValue[1] /
+                                (CalculatorPage.seasonHours *
+                                    progress.seasonProgress))
+                            .toStringAsFixed(2),
                   ),
-                ),
-                Tooltip(
-                  message: AppLocalizations.of(context)!.remove,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _dynamicFormNum > _minFormLimit
-                            ? _dynamicFormNum--
-                            : _dynamicFormNum;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(12),
-                    ),
-                    child: const Icon(Icons.remove),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 8,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.gp +
+                        (_totalGold /
+                                (0.5 *
+                                    (310 +
+                                        CalculatorPage.waveValue[0] * 310) *
+                                    CalculatorPage.waveValue[0]) *
+                                100)
+                            .toStringAsFixed(2),
                   ),
-                ),
-                Tooltip(
-                  message: AppLocalizations.of(context)!.add,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _dynamicFormNum < _maxFormLimit
-                            ? _dynamicFormNum++
-                            : _dynamicFormNum;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(12),
-                    ),
-                    child: const Icon(Icons.add),
+                  Text(
+                    AppLocalizations.of(context)!.ratio +
+                        (_totalGold /
+                                (CalculatorPage.waveValue[0] *
+                                    CalculatorPage.waveValue[0]))
+                            .toStringAsFixed(2),
                   ),
+                ],
+              ),
+
+              // ── Unit list ──────────────────────────────────────────────
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _dynamicFormNum,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                      child: Column(
+                        children: [
+                          Row(
+                            spacing: 8,
+                            children: [
+                              Expanded(
+                                flex: 1,
+                                child: Checkbox(
+                                  value: _targetCheckbox[index],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _targetCheckbox[index] = value ?? false;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                flex: 4,
+                                child: TextField(
+                                  controller: index < _defaultFormCount
+                                      ? _defaultFormNameControllers[index]
+                                      : _targetNameControllers[
+                                          index - _defaultFormCount],
+                                  readOnly: index < _defaultFormCount,
+                                  decoration: InputDecoration(
+                                    labelText: AppLocalizations.of(context)!
+                                        .unitName(index + 1),
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterUnitName,
+                                    border: const OutlineInputBorder(),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _targetName[index - _defaultFormCount] =
+                                          value;
+                                    });
+                                  },
+                                ),
+                              ),
+                              Expanded(
+                                flex: 5,
+                                child: TextField(
+                                  controller: _targetLevelControllers[index],
+                                  keyboardType: TextInputType.number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  decoration: InputDecoration(
+                                    labelText: AppLocalizations.of(context)!
+                                        .unitLevel,
+                                    hintText: AppLocalizations.of(context)!
+                                        .enterUnitLevel,
+                                    border: const OutlineInputBorder(),
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _targetLevel[index] =
+                                          convertStringToInt(value);
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            spacing: 8,
+                            children: [
+                              Text(_targetGoldString[index]),
+                              Text(
+                                '${_targetCheckbox[index] ? (_targetGold[index] / _totalGold * 100).toStringAsFixed(2) : '0.00'}%',
+                              ),
+                              Text(
+                                (_targetLevel[index] /
+                                        CalculatorPage.waveValue[0])
+                                    .toStringAsFixed(3),
+                              ),
+                              Text(
+                                (CalculatorPage.waveValue[0] /
+                                        _targetLevel[index])
+                                    .toStringAsFixed(2),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
-                Tooltip(
-                  message: AppLocalizations.of(context)!.save,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _saveCalculatorData();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(12),
+              ),
+
+              // ── Action buttons ─────────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 8,
+                children: [
+                  Tooltip(
+                    message: AppLocalizations.of(context)!.clearInputFields,
+                    child: ElevatedButton(
+                      onPressed: () => setState(_clearFormData),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(12),
+                      ),
+                      child: const Icon(Icons.delete),
                     ),
-                    child: const Icon(Icons.save),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  Tooltip(
+                    message: AppLocalizations.of(context)!.loadData,
+                    child: ElevatedButton(
+                      onPressed: () => setState(() {
+                        _loadData();
+                      }),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(12),
+                      ),
+                      child: const Icon(Icons.download),
+                    ),
+                  ),
+                  Tooltip(
+                    message: AppLocalizations.of(context)!.remove,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          if (_dynamicFormNum > _minFormLimit) {
+                            _dynamicFormNum--;
+                          }
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(12),
+                      ),
+                      child: const Icon(Icons.remove),
+                    ),
+                  ),
+                  Tooltip(
+                    message: AppLocalizations.of(context)!.add,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          if (_dynamicFormNum < _maxFormLimit) {
+                            _dynamicFormNum++;
+                          }
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(12),
+                      ),
+                      child: const Icon(Icons.add),
+                    ),
+                  ),
+                  Tooltip(
+                    message: AppLocalizations.of(context)!.save,
+                    child: ElevatedButton(
+                      onPressed: _saveData,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(12),
+                      ),
+                      child: const Icon(Icons.save),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

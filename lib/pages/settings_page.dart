@@ -1,19 +1,17 @@
-import 'dart:convert';
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:grow_castle_calculator/pages/update_checker_page/update_checker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator/main.dart';
+import 'package:grow_castle_calculator/app.dart';
 import 'package:grow_castle_calculator/enums/locale_option.dart';
 import 'package:grow_castle_calculator/enums/theme_option.dart';
+import 'package:grow_castle_calculator/models/update_info.dart';
+import 'package:grow_castle_calculator/providers/theme_provider.dart';
+import 'package:grow_castle_calculator/services/data_export_service.dart';
+import 'package:grow_castle_calculator/services/preferences_service.dart';
+import 'package:grow_castle_calculator/services/update_checker.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -23,604 +21,295 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  bool _isChecking = false;
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.settings),
+        title: Text(loc.settings),
         elevation: 1,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       ),
       body: ListView(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.language),
-              title: Text(AppLocalizations.of(context)!.language),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    LocaleOption.fromLocaleCode2LocaleOption(
-                      localeChoice,
-                    ).localeString,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const Icon(Icons.keyboard_arrow_right),
-                ],
-              ),
-              onTap: () async {
-                final choice = await _changeLanguageDialog();
-                choice == null
-                    ? null
-                    : setState(() {
-                        Get.updateLocale(
-                          LocaleOption.values[choice].localeType,
-                        );
-                        localeChoice =
-                            LocaleOption.values[choice].localeCode;
-                        _saveLocale();
-                      });
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.color_lens),
-              title: Text(AppLocalizations.of(context)!.themeMode),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    ThemeOption.fromThemeCode2ThemeOption(
-                      themeChoice,
-                    ).themeString,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const Icon(Icons.keyboard_arrow_right),
-                ],
-              ),
-              onTap: () async {
-                final choice = await _changeThemeModeDialog();
-                choice == null
-                    ? null
-                    : setState(() {
-                        themeChoice =
-                            ThemeOption.values[choice].themeCode;
-                        themeProvider.setThemeMode(
-                          ThemeOption.values[choice].themeMode,
-                        );
-                        _saveTheme();
-                      });
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_forever),
-              title: Text(AppLocalizations.of(context)!.clearSavedData),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-              onTap: () async {
-                final confirm = await _clearDataDialogConfirmation();
-                if (confirm == true) {
-                  clearData();
-                  ScaffoldMessenger.of(context)
-                    ..removeCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          AppLocalizations.of(context)!.clearDataFinished,
-                        ),
+        children: [
+          // ── Language ──────────────────────────────────────────────────
+          ListTile(
+            leading: const Icon(Icons.language),
+            title: Text(loc.language),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  LocaleOption.fromLocaleCode2LocaleOption(localeChoice)
+                      .localeString,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
-                    );
-                }
-              },
+                ),
+                const Icon(Icons.keyboard_arrow_right),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.file_upload),
-              title: Text(AppLocalizations.of(context)!.exportData),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-              onTap: _exportData,
+            onTap: () async {
+              final choice = await _showLanguageDialog();
+              if (choice != null) {
+                setState(() {
+                  Get.updateLocale(
+                    LocaleOption.values[choice].localeType,
+                  );
+                  localeChoice = LocaleOption.values[choice].localeCode;
+                  PreferencesService.setLocaleChoice(localeChoice);
+                });
+              }
+            },
+          ),
+
+          // ── Theme ─────────────────────────────────────────────────────
+          ListTile(
+            leading: const Icon(Icons.color_lens),
+            title: Text(loc.themeMode),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  ThemeOption.fromThemeCode2ThemeOption(themeChoice)
+                      .themeString,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+                const Icon(Icons.keyboard_arrow_right),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.file_download),
-              title: Text(AppLocalizations.of(context)!.importData),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-              onTap: _importData,
-            ),
-            ListTile(
-              leading: _isChecking
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.system_update),
-              title: Text(AppLocalizations.of(context)!.checkForUpdates),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-              enabled: !_isChecking,
-              onTap: _isChecking ? null : _checkUpdate,
-            ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: Text(AppLocalizations.of(context)!.about),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-              onTap: () async {
-                showAboutDialog(
-                  context: context,
-                  applicationName: AppLocalizations.of(context)!.appName,
-                  applicationVersion: AppLocalizations.of(
-                    context,
-                  )!.appVersion(await UpdateChecker.getAppVersion()),
-                  applicationIcon: const Icon(Icons.calculate),
-                  applicationLegalese: AppLocalizations.of(
-                    context,
-                  )!.developer,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton.icon(
-                          icon: const Icon(Icons.link),
-                          onPressed: () async {
-                            final url = Uri.parse(
-                              AppLocalizations.of(
-                                context,
-                              )!.repositoryUrl,
-                            );
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url);
-                            } else {
-                              ScaffoldMessenger.of(context)
-                                ..removeCurrentSnackBar()
-                                ..showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.cannotLaunchURL(url.toString()),
-                                    ),
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                );
-                            }
-                          },
-                          label: Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.github,
-                          ),
-                        ),
-                        TextButton.icon(
-                          icon: const Icon(Icons.link),
-                          onPressed: () async {
-                            final url = Uri.parse(
-                              AppLocalizations.of(
-                                context,
-                              )!.developerBilibiliUrl,
-                            );
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url);
-                            } else {
-                              ScaffoldMessenger.of(context)
-                                ..removeCurrentSnackBar()
-                                ..showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      AppLocalizations.of(
-                                        context,
-                                      )!.cannotLaunchURL(url.toString()),
-                                    ),
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                );
-                            }
-                          },
-                          label: Text(
-                            AppLocalizations.of(
-                              context,
-                            )!.bilibili,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                );
-              },
-            ),
+            onTap: () async {
+              final choice = await _showThemeDialog();
+              if (choice != null) {
+                setState(() {
+                  themeChoice = ThemeOption.values[choice].themeCode;
+                  themeProvider.setThemeMode(
+                    ThemeOption.values[choice].themeMode,
+                  );
+                  PreferencesService.setThemeChoice(themeChoice);
+                });
+              }
+            },
+          ),
+
+          // ── Clear data ────────────────────────────────────────────────
+          ListTile(
+            leading: const Icon(Icons.delete_forever),
+            title: Text(loc.clearSavedData),
+            trailing: const Icon(Icons.keyboard_arrow_right),
+            onTap: () async {
+              final confirm = await _showClearDataDialog();
+              if (confirm == true) {
+                await PreferencesService.clearAllData();
+                if (!mounted) return;
+                ScaffoldMessenger.of(context)
+                  ..removeCurrentSnackBar()
+                  ..showSnackBar(
+                    SnackBar(content: Text(loc.clearDataFinished)),
+                  );
+              }
+            },
+          ),
+
+          // ── Export / Import ───────────────────────────────────────────
+          ListTile(
+            leading: const Icon(Icons.file_upload),
+            title: Text(loc.exportData),
+            trailing: const Icon(Icons.keyboard_arrow_right),
+            onTap: () => DataExportService.exportData(context),
+          ),
+          ListTile(
+            leading: const Icon(Icons.file_download),
+            title: Text(loc.importData),
+            trailing: const Icon(Icons.keyboard_arrow_right),
+            onTap: () => DataExportService.importData(context),
+          ),
+
+          // ── Check for updates ─────────────────────────────────────────
+          ListTile(
+            leading: _isChecking
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.system_update),
+            title: Text(loc.checkForUpdates),
+            trailing: const Icon(Icons.keyboard_arrow_right),
+            enabled: !_isChecking,
+            onTap: _isChecking ? null : _checkForUpdate,
+          ),
+
+          // ── About ─────────────────────────────────────────────────────
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: Text(loc.about),
+            trailing: const Icon(Icons.keyboard_arrow_right),
+            onTap: () => _showAboutDialog(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Language dialog ────────────────────────────────────────────────────
+
+  Future<int?> _showLanguageDialog() async {
+    final loc = AppLocalizations.of(context)!;
+    return showDialog<int>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(loc.language),
+        children: [
+          _buildDialogOption(
+            label: loc.systemDefault,
+            isSelected: localeChoice == 0,
+            onTap: () => Navigator.of(ctx).pop(0),
+          ),
+          _buildDialogOption(
+            label: loc.zh_CN_withCode,
+            isSelected: localeChoice == 1,
+            onTap: () => Navigator.of(ctx).pop(1),
+          ),
+          _buildDialogOption(
+            label: loc.en_withCode,
+            isSelected: localeChoice == 2,
+            onTap: () => Navigator.of(ctx).pop(2),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Theme dialog ───────────────────────────────────────────────────────
+
+  Future<int?> _showThemeDialog() async {
+    final loc = AppLocalizations.of(context)!;
+    return showDialog<int>(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: Text(loc.themeMode),
+        children: [
+          _buildDialogOption(
+            label: loc.systemDefault,
+            isSelected: themeChoice == 0,
+            onTap: () => Navigator.of(ctx).pop(0),
+          ),
+          _buildDialogOption(
+            label: loc.lightMode,
+            isSelected: themeChoice == 1,
+            onTap: () => Navigator.of(ctx).pop(1),
+          ),
+          _buildDialogOption(
+            label: loc.darkMode,
+            isSelected: themeChoice == 2,
+            onTap: () => Navigator.of(ctx).pop(2),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDialogOption({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return SimpleDialogOption(
+      onPressed: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label),
+            if (isSelected) const Icon(Icons.check) else const SizedBox(),
           ],
         ),
+      ),
     );
   }
 
-  Future<void> _saveLocale() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('localeChoice', localeChoice);
-  }
+  // ── Clear data dialog ──────────────────────────────────────────────────
 
-  Future<int?> _changeLanguageDialog() async {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          title: Text(AppLocalizations.of(context)!.language),
-          children: <Widget>[
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(context).pop(0),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.systemDefault),
-                    localeChoice == 0 ? const Icon(Icons.check) : const SizedBox(),
-                  ],
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(context).pop(1),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.zh_CN_withCode),
-                    localeChoice == 1 ? const Icon(Icons.check) : const SizedBox(),
-                  ],
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(context).pop(2),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.en_withCode),
-                    localeChoice == 2 ? const Icon(Icons.check) : const SizedBox(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _saveTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('themeChoice', themeChoice);
-  }
-
-  Future<int?> _changeThemeModeDialog() async {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          title: Text(AppLocalizations.of(context)!.themeMode),
-          children: <Widget>[
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(context).pop(0),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.systemDefault),
-                    themeChoice == 0 ? const Icon(Icons.check) : const SizedBox(),
-                  ],
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(context).pop(1),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.lightMode),
-                    themeChoice == 1 ? const Icon(Icons.check) : const SizedBox(),
-                  ],
-                ),
-              ),
-            ),
-            SimpleDialogOption(
-              onPressed: () => Navigator.of(context).pop(2),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(AppLocalizations.of(context)!.darkMode),
-                    themeChoice == 2 ? const Icon(Icons.check) : const SizedBox(),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<bool?> _clearDataDialogConfirmation() {
+  Future<bool?> _showClearDataDialog() {
+    final loc = AppLocalizations.of(context)!;
     return showDialog<bool>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(AppLocalizations.of(context)!.clearSavedData),
-          content: Text(AppLocalizations.of(context)!.clearDataWarning),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(AppLocalizations.of(context)!.confirm),
-            ),
-          ],
-        );
-      },
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.clearSavedData),
+        content: Text(loc.clearDataWarning),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(loc.confirm),
+          ),
+        ],
+      ),
     );
   }
 
-  Future<void> clearData() async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.remove('dynamicFormNum');
-    prefs.remove('waveValue');
-    prefs.remove('targetName');
-    prefs.remove('targetLevel');
-    prefs.remove('targetCheckbox');
-    prefs.remove('gc_waveValue');
-    prefs.remove('gc_formField');
-    prefs.remove('gc_checkboxForm');
-    prefs.remove('gc_isExpanded');
-  }
-  
-  static const _dataKeys = [
-    'dynamicFormNum',
-    'waveValue',
-    'targetName',
-    'targetLevel',
-    'targetCheckbox',
-    'gc_waveValue',
-    'gc_formField',
-    'gc_checkboxForm',
-    'gc_isExpanded',
-  ];
+  // ── Update checking ────────────────────────────────────────────────────
 
-  static const _stringListKeys = {
-    'waveValue',
-    'targetName',
-    'targetLevel',
-    'targetCheckbox',
-    'gc_waveValue',
-    'gc_formField',
-    'gc_checkboxForm',
-    'gc_isExpanded',
-  };
-
-  Future<void> _exportData() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final data = <String, dynamic>{};
-      for (final key in _dataKeys) {
-        if (_stringListKeys.contains(key)) {
-          data[key] = prefs.getStringList(key);
-        } else {
-          data[key] = prefs.getInt(key);
-        }
-      }
-
-      final exportMap = {
-        'version': 1,
-        'app': 'grow_castle_calculator',
-        'exportTime': DateTime.now().toIso8601String(),
-        'data': data,
-      };
-
-      final jsonString = const JsonEncoder.withIndent('  ').convert(exportMap);
-      final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/grow_castle_data_export.json');
-      await file.writeAsString(jsonString);
-
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        subject: 'Grow Castle Calculator - Data Export',
-      );
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.exportSuccess),
-          ),
-        );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.exportFailed),
-          ),
-        );
-    }
-  }
-
-  Future<void> _importData() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.any,
-      );
-      if (result == null || result.files.isEmpty) return;
-
-      final filePath = result.files.single.path;
-      if (filePath == null) return;
-
-      final file = File(filePath);
-      if (!await file.exists()) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.importFailed),
-            ),
-          );
-        return;
-      }
-
-      final jsonString = await file.readAsString();
-      final decoded = json.decode(jsonString);
-
-      if (decoded is! Map<String, dynamic>) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.invalidDataFormat),
-            ),
-          );
-        return;
-      }
-
-      final data = decoded['data'];
-      if (data is! Map<String, dynamic>) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context)
-          ..removeCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.invalidDataFormat),
-            ),
-          );
-        return;
-      }
-
-      if (!mounted) return;
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text(AppLocalizations.of(context)!.importData),
-          content: Text(AppLocalizations.of(context)!.importWarning),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: Text(AppLocalizations.of(context)!.importData),
-            ),
-          ],
-        ),
-      );
-
-      if (confirm != true) return;
-
-      final prefs = await SharedPreferences.getInstance();
-      for (final key in _dataKeys) {
-        if (!data.containsKey(key)) continue;
-        final value = data[key];
-        if (_stringListKeys.contains(key)) {
-          if (value is List) {
-            await prefs.setStringList(
-              key,
-              value.map((e) => e.toString()).toList(),
-            );
-          }
-        } else {
-          if (value is int) {
-            await prefs.setInt(key, value);
-          } else if (value is String) {
-            await prefs.setInt(key, int.tryParse(value) ?? 0);
-          }
-        }
-      }
-
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.importSuccess),
-          ),
-        );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.importFailed),
-          ),
-        );
-    }
-  }
-
-  bool _isChecking = false;
-
-  void _checkUpdate() async {
+  Future<void> _checkForUpdate() async {
     setState(() => _isChecking = true);
-    final updateInfo = await UpdateChecker.checkForUpdate();
+    final info = await UpdateChecker.checkForUpdate();
     setState(() => _isChecking = false);
 
-    if (updateInfo == null) {
-      _showToast(AppLocalizations.of(context)!.checkForUpdateFailed);
-      return;
-    }
+    if (!mounted) return;
+    final loc = AppLocalizations.of(context)!;
 
-    if (updateInfo.hasUpdate) {
-      _showUpdateDialog(updateInfo);
+    if (info == null) {
+      _showToast(loc.checkForUpdateFailed);
+    } else if (info.hasUpdate) {
+      _showUpdateDialog(info);
     } else {
-      _showToast(AppLocalizations.of(context)!.isLatestVersion);
+      _showToast(loc.isLatestVersion);
     }
   }
 
   void _showUpdateDialog(UpdateInfo info) {
+    final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.findNewVersion),
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.findNewVersion),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("${AppLocalizations.of(context)!.currentVersion}${info.localVersion}"),
-            Text("${AppLocalizations.of(context)!.latestVersion}${info.latestVersion}"),
+            Text('${loc.currentVersion}${info.localVersion}'),
+            Text('${loc.latestVersion}${info.latestVersion}'),
             const SizedBox(height: 12),
-            Text(AppLocalizations.of(context)!.updateContent),
+            Text(loc.updateContent),
             const SizedBox(height: 8),
-            Text(info.updateContent ?? AppLocalizations.of(context)!.fixedKnownIssues),
+            Text(info.updateContent ?? loc.fixedKnownIssues),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.updateLater),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(loc.updateLater),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              UpdateChecker.openDownloadUrl(info.downloadUrl!);
+              Navigator.pop(ctx);
+              if (info.downloadUrl != null) {
+                UpdateChecker.openDownloadUrl(info.downloadUrl!);
+              }
             },
-            child: Text(AppLocalizations.of(context)!.updateNow),
+            child: Text(loc.updateNow),
           ),
         ],
       ),
@@ -630,6 +319,65 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showToast(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
+    );
+  }
+
+  // ── About dialog ───────────────────────────────────────────────────────
+
+  Future<void> _showAboutDialog(BuildContext context) async {
+    final loc = AppLocalizations.of(context)!;
+    final version = await UpdateChecker.getAppVersion();
+    showAboutDialog(
+      context: context,
+      applicationName: loc.appName,
+      applicationVersion: loc.appVersion(version),
+      applicationIcon: const Icon(Icons.calculate),
+      applicationLegalese: loc.developer,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildLinkButton(
+              icon: Icons.link,
+              label: loc.github,
+              url: loc.repositoryUrl,
+            ),
+            _buildLinkButton(
+              icon: Icons.link,
+              label: loc.bilibili,
+              url: loc.developerBilibiliUrl,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLinkButton({
+    required IconData icon,
+    required String label,
+    required String url,
+  }) {
+    final loc = AppLocalizations.of(context)!;
+    return TextButton.icon(
+      icon: Icon(icon),
+      onPressed: () async {
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri);
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context)
+            ..removeCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text(loc.cannotLaunchURL(url)),
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ),
+            );
+        }
+      },
+      label: Text(label),
     );
   }
 }
