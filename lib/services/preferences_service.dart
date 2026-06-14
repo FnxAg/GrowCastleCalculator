@@ -2,6 +2,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:grow_castle_calculator/models/calculator_data.dart';
 import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
+import 'package:grow_castle_calculator/models/wave_speed_query_data.dart';
 
 /// Centralized access to all persisted app state.
 ///
@@ -33,6 +34,7 @@ class PreferencesService {
   /// Single-key JSON storage (new format).
   static const _keyCalculatorData = 'calculator_data';
   static const _keyGoldCalculatorData = 'gold_calculator_data';
+  static const _keyWaveSpeedQueryData = 'wave_speed_query_data';
 
   /// Old per-field keys — kept for migration.
   static const _legacyCalculatorKeys = [
@@ -53,6 +55,7 @@ class PreferencesService {
   static const List<String> allDataKeys = [
     _keyCalculatorData,
     _keyGoldCalculatorData,
+    _keyWaveSpeedQueryData,
     ..._legacyCalculatorKeys,
     ..._legacyGoldCalculatorKeys,
   ];
@@ -174,6 +177,22 @@ class PreferencesService {
     );
   }
 
+  // ── Wave speed query page (single JSON key) ─────────────────────────────
+
+  static Future<WaveSpeedQueryData> loadWaveSpeedQueryData() async {
+    final prefs = await _prefs;
+    final jsonString = prefs.getString(_keyWaveSpeedQueryData);
+    if (jsonString != null) {
+      return WaveSpeedQueryData.fromJson(jsonString);
+    }
+    return WaveSpeedQueryData.defaults();
+  }
+
+  static Future<void> saveWaveSpeedQueryData(WaveSpeedQueryData data) async {
+    final prefs = await _prefs;
+    await prefs.setString(_keyWaveSpeedQueryData, data.toJson());
+  }
+
   // ── Bulk operations ────────────────────────────────────────────────────
 
   /// Removes all app data (both old and new formats), but keeps locale/theme.
@@ -199,6 +218,10 @@ class PreferencesService {
     if (gcJson != null) {
       data[_keyGoldCalculatorData] = gcJson;
     }
+    final wsqJson = prefs.getString(_keyWaveSpeedQueryData);
+    if (wsqJson != null) {
+      data[_keyWaveSpeedQueryData] = wsqJson;
+    }
 
     // Also export locale/theme for completeness.
     data[_keyLocaleChoice] = prefs.getInt(_keyLocaleChoice) ?? 0;
@@ -217,6 +240,9 @@ class PreferencesService {
     }
     if (data[_keyGoldCalculatorData] is String) {
       await prefs.setString(_keyGoldCalculatorData, data[_keyGoldCalculatorData]);
+    }
+    if (data[_keyWaveSpeedQueryData] is String) {
+      await prefs.setString(_keyWaveSpeedQueryData, data[_keyWaveSpeedQueryData]);
     }
 
     // Locale / theme.

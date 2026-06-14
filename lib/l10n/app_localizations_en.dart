@@ -239,6 +239,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goldCalculator => 'Gold Calculator';
 
   @override
+  String get waveSpeedQuery => 'Wave Speed Query';
+
+  @override
   String get inherit => 'Inherit';
 
   @override

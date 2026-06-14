@@ -238,6 +238,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goldCalculator => '收入计算器';
 
   @override
+  String get waveSpeedQuery => '波速查询';
+
+  @override
   String get inherit => '继承';
 
   @override
@@ -259,10 +262,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterWave => '输入波数';
 
   @override
-  String get waveTime => '单波时间(s)';
+  String get waveTime => '单波时间 (s)';
 
   @override
-  String get enterWaveTime => '输入单波时间(s)';
+  String get enterWaveTime => '输入单波时间 (s)';
 
   @override
   String get infiniteColony => '通天塔';
@@ -298,16 +301,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goldHour => '小时收入：';
 
   @override
-  String get goldAutoBattle => '金挂(GAB)';
+  String get goldAutoBattle => '金挂 (GAB)';
 
   @override
-  String get gabHourDay => '每日金挂时长(h)';
+  String get gabHourDay => '每日金挂时长 (h)';
 
   @override
   String get enterHour => '输入时长';
 
   @override
-  String get gabProfit => '金挂收益(%)';
+  String get gabProfit => '金挂收益 (%)';
 
   @override
   String get enterProfit => '输入收益百分比';
@@ -316,10 +319,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goldWave => '每波收益：';
 
   @override
-  String get timeAutoBattle => '时挂(TAB)';
+  String get timeAutoBattle => '时挂 (TAB)';
 
   @override
-  String get tabHourDay => '每日时挂时长(h)';
+  String get tabHourDay => '每日时挂时长 (h)';
 
   @override
   String get goldenTree => '金币大树';

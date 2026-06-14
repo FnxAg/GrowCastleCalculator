@@ -542,6 +542,12 @@ abstract class AppLocalizations {
   /// **'Gold Calculator'**
   String get goldCalculator;
 
+  /// No description provided for @waveSpeedQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Wave Speed Query'**
+  String get waveSpeedQuery;
+
   /// No description provided for @inherit.
   ///
   /// In en, this message translates to:
