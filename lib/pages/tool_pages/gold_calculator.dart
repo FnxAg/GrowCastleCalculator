@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
 import 'package:grow_castle_calculator/pages/calculator_page.dart';
+import 'package:grow_castle_calculator/providers/gold_calculator_provider.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:grow_castle_calculator/utils/number_utils.dart';
 import 'package:grow_castle_calculator/utils/text_input_formatter.dart';
@@ -76,6 +78,9 @@ class _GoldCalculatorState extends State<GoldCalculator>
     _checkboxForm = _padList(data.checkboxForm, true, 4);
     _formField = _padList(data.formField, 0, 9);
     _isExpanded = _padList(data.isExpanded, true, 4);
+    _waveValue = data.waveValue.length >= 2
+        ? List<int>.from(data.waveValue)
+        : [1000000, 40000];
     _syncControllers();
     setState(() => _isLoading = false);
   }
@@ -101,13 +106,12 @@ class _GoldCalculatorState extends State<GoldCalculator>
 
   void _syncWaveControllers() {
     if (_checkboxForm[0]) {
+      _waveValue = List<int>.from(CalculatorPage.waveValue);
       for (int i = 0; i < _waveValueControllers.length; i++) {
         _waveValueControllers[i].text =
             CalculatorPage.waveValue[i].toString();
       }
     } else {
-      _waveValue = (CalculatorPage.waveValue.toList())
-        ..[0] = CalculatorPage.waveValue[0];
       for (int i = 0; i < _waveValueControllers.length; i++) {
         _waveValueControllers[i].text = _waveValue[i].toString();
       }
@@ -230,6 +234,15 @@ class _GoldCalculatorState extends State<GoldCalculator>
         tabGoldPerDay +
         goldenTreeGoldPerDay +
         seasonalColonyGoldPerDay;
+
+    // Notify the global provider so tool_page can display the value.
+    // Skip while loading — controllers are empty and would push 0.
+    if (!_isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<GoldCalculatorProvider>(context, listen: false)
+            .setDailyIncome(totalGoldPerDay);
+      });
+    }
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async => _saveData(),

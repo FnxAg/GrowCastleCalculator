@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/gold_calculator.dart';
+import 'package:grow_castle_calculator/providers/gold_calculator_provider.dart';
+import 'package:grow_castle_calculator/utils/number_utils.dart';
 
 class ToolPage extends StatefulWidget {
   const ToolPage({super.key});
@@ -20,16 +23,34 @@ class _ToolPageState extends State<ToolPage> {
       ),
       body: ListView(
           children: [
-            ListTile(
-              leading: const Icon(Icons.monetization_on),
-              title: Text(AppLocalizations.of(context)!.goldCalculator),
-              trailing: const Icon(Icons.keyboard_arrow_right),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const GoldCalculator(),
+            Consumer<GoldCalculatorProvider>(
+              builder: (context, provider, child) {
+                final dailyIncome =
+                    decreaseNumSize(provider.dailyIncome, context);
+                return ListTile(
+                  leading: const Icon(Icons.monetization_on),
+                  title: Text(AppLocalizations.of(context)!.goldCalculator),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        dailyIncome,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const Icon(Icons.keyboard_arrow_right),
+                    ],
                   ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const GoldCalculator(),
+                      ),
+                    );
+                  },
                 );
               },
             ),
