@@ -27,10 +27,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get taDefault => 'TA (Default)';
 
   @override
-  String get clearInputFields => 'Clear All Input Fields';
-
-  @override
-  String get loadData => 'Load Data';
+  String get clearInputFields => 'Clear Input';
 
   @override
   String get currentWave => 'Current Wave';
@@ -330,4 +327,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get seasonalColony => 'Seasonal Colony';
+
+  @override
+  String get historyArchives => 'History Archives';
+
+  @override
+  String get archiveName => 'Archive Name';
+
+  @override
+  String get load => 'Load';
+
+  @override
+  String get rename => 'Rename';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get noArchives => 'No Archives';
+
+  @override
+  String get renameArchive => 'Rename Archive';
+
+  @override
+  String get saveArchive => 'Save Archive';
+
+  @override
+  String get enterArchiveName => 'Enter Archive Name';
+
+  @override
+  String get deleteArchiveConfirm =>
+      'Delete this archive? This cannot be undone.';
+
+  @override
+  String get loadArchiveConfirm =>
+      'Loading this archive will overwrite current data. Continue?';
+
+  @override
+  String get currentWaveValue => 'Wave: ';
 }

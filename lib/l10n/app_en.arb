@@ -5,8 +5,7 @@
     "settings": "Settings",
     "castleDefault": "Castle (Default)",
     "taDefault": "TA (Default)",
-    "clearInputFields": "Clear All Input Fields",
-    "loadData": "Load Data",
+    "clearInputFields": "Clear Input",
     "currentWave": "Current Wave",
     "enterCurrentWave": "Enter Current Wave",
     "seasonalWave": "Seasonal Wave",
@@ -124,5 +123,17 @@
     "timeAutoBattle": "Time Auto Battle",
     "tabHourDay": "TAB Hours/Day",
     "goldenTree": "Golden Tree",
-    "seasonalColony": "Seasonal Colony"
+    "seasonalColony": "Seasonal Colony",
+    "historyArchives": "History Archives",
+    "archiveName": "Archive Name",
+    "load": "Load",
+    "rename": "Rename",
+    "delete": "Delete",
+    "noArchives": "No Archives",
+    "renameArchive": "Rename Archive",
+    "saveArchive": "Save Archive",
+    "enterArchiveName": "Enter Archive Name",
+    "deleteArchiveConfirm": "Delete this archive? This cannot be undone.",
+    "loadArchiveConfirm": "Loading this archive will overwrite current data. Continue?",
+    "currentWaveValue": "Wave: "
 }

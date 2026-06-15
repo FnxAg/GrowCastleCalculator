@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:grow_castle_calculator/models/calculator_archive.dart';
 import 'package:grow_castle_calculator/models/calculator_data.dart';
 import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
 import 'package:grow_castle_calculator/models/wave_speed_query_data.dart';
@@ -35,6 +38,7 @@ class PreferencesService {
   static const _keyCalculatorData = 'calculator_data';
   static const _keyGoldCalculatorData = 'gold_calculator_data';
   static const _keyWaveSpeedQueryData = 'wave_speed_query_data';
+  static const _keyCalculatorArchives = 'calculator_archives';
 
   /// Old per-field keys — kept for migration.
   static const _legacyCalculatorKeys = [
@@ -56,6 +60,7 @@ class PreferencesService {
     _keyCalculatorData,
     _keyGoldCalculatorData,
     _keyWaveSpeedQueryData,
+    _keyCalculatorArchives,
     ..._legacyCalculatorKeys,
     ..._legacyGoldCalculatorKeys,
   ];
@@ -191,6 +196,31 @@ class PreferencesService {
   static Future<void> saveWaveSpeedQueryData(WaveSpeedQueryData data) async {
     final prefs = await _prefs;
     await prefs.setString(_keyWaveSpeedQueryData, data.toJson());
+  }
+
+  // ── Calculator archives ────────────────────────────────────────────────
+
+  /// Loads all saved calculator archives.
+  static Future<List<CalculatorArchive>> loadArchives() async {
+    final prefs = await _prefs;
+    final jsonString = prefs.getString(_keyCalculatorArchives);
+    if (jsonString == null || jsonString.isEmpty) return [];
+
+    try {
+      final list = json.decode(jsonString) as List<dynamic>;
+      return list
+          .map((e) => CalculatorArchive.fromJson(json.encode(e)))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Saves the full list of calculator archives.
+  static Future<void> saveArchives(List<CalculatorArchive> archives) async {
+    final prefs = await _prefs;
+    final list = archives.map((a) => a.toMap()).toList();
+    await prefs.setString(_keyCalculatorArchives, json.encode(list));
   }
 
   // ── Bulk operations ────────────────────────────────────────────────────

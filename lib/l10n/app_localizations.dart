@@ -137,14 +137,8 @@ abstract class AppLocalizations {
   /// No description provided for @clearInputFields.
   ///
   /// In en, this message translates to:
-  /// **'Clear All Input Fields'**
+  /// **'Clear Input'**
   String get clearInputFields;
-
-  /// No description provided for @loadData.
-  ///
-  /// In en, this message translates to:
-  /// **'Load Data'**
-  String get loadData;
 
   /// No description provided for @currentWave.
   ///
@@ -727,6 +721,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Seasonal Colony'**
   String get seasonalColony;
+
+  /// No description provided for @historyArchives.
+  ///
+  /// In en, this message translates to:
+  /// **'History Archives'**
+  String get historyArchives;
+
+  /// No description provided for @archiveName.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive Name'**
+  String get archiveName;
+
+  /// No description provided for @load.
+  ///
+  /// In en, this message translates to:
+  /// **'Load'**
+  String get load;
+
+  /// No description provided for @rename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get rename;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @noArchives.
+  ///
+  /// In en, this message translates to:
+  /// **'No Archives'**
+  String get noArchives;
+
+  /// No description provided for @renameArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename Archive'**
+  String get renameArchive;
+
+  /// No description provided for @saveArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Archive'**
+  String get saveArchive;
+
+  /// No description provided for @enterArchiveName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter Archive Name'**
+  String get enterArchiveName;
+
+  /// No description provided for @deleteArchiveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this archive? This cannot be undone.'**
+  String get deleteArchiveConfirm;
+
+  /// No description provided for @loadArchiveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading this archive will overwrite current data. Continue?'**
+  String get loadArchiveConfirm;
+
+  /// No description provided for @currentWaveValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Wave: '**
+  String get currentWaveValue;
 }
 
 class _AppLocalizationsDelegate

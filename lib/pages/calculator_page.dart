@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator/models/calculator_archive.dart';
 import 'package:grow_castle_calculator/models/calculator_data.dart';
+import 'package:grow_castle_calculator/pages/history_archives_page.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
@@ -176,6 +179,105 @@ class _CalculatorPageState extends State<CalculatorPage>
     });
   }
 
+  // ── Archive operations ─────────────────────────────────────────────────
+
+  /// Opens a dialog for the user to name and save the current state as an
+  /// archive.
+  Future<void> _showSaveArchiveDialog() async {
+    final loc = AppLocalizations.of(context)!;
+    final defaultName =
+        DateFormat('yyyy_MM_dd_HH_mm_ss').format(DateTime.now());
+    final controller = TextEditingController(text: defaultName);
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.saveArchive),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: loc.archiveName,
+            hintText: loc.enterArchiveName,
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: Text(loc.save),
+          ),
+        ],
+      ),
+    );
+
+    controller.dispose();
+    if (name == null || name.trim().isEmpty) return;
+
+    final archive = CalculatorArchive(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      name: name.trim(),
+      savedAt: DateTime.now(),
+      dynamicFormNum: _dynamicFormNum,
+      waveValue: CalculatorPage.waveValue.toList(),
+      targetName: _targetName.toList(),
+      targetLevel: _targetLevel.toList(),
+      targetCheckbox: _targetCheckbox.toList(),
+      visibleColumns: _visibleColumns.toList(),
+    );
+
+    final archives = await PreferencesService.loadArchives();
+    archives.insert(0, archive); // newest first
+    await PreferencesService.saveArchives(archives);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${loc.saveArchive}: ${archive.name}')),
+      );
+    }
+  }
+
+  /// Opens the history archives page and applies the selected archive if
+  /// the user chooses to load one.
+  Future<void> _openHistoryArchives() async {
+    final archive = await Navigator.push<CalculatorArchive>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const HistoryArchivesPage(),
+      ),
+    );
+    if (archive != null) {
+      _applyArchive(archive);
+    }
+  }
+
+  /// Applies the data from [archive] to the current calculator state.
+  void _applyArchive(CalculatorArchive archive) {
+    setState(() {
+      _dynamicFormNum = archive.dynamicFormNum;
+      CalculatorPage.waveValue = archive.waveValue.toList();
+      _targetName = _padList(
+        archive.targetName.toList(),
+        '',
+        _maxFormLimit - _defaultFormCount,
+      );
+      _targetLevel = _padList(archive.targetLevel.toList(), 10000, _maxFormLimit);
+      _targetCheckbox = _padList(
+        archive.targetCheckbox.toList(),
+        true,
+        _maxFormLimit,
+      );
+      _visibleColumns = archive.visibleColumns.toList();
+      _syncControllers();
+    });
+    _saveData();
+    _saveColumnVisibility();
+  }
+
   // ── Column visibility ──────────────────────────────────────────────────
 
   Future<void> _saveColumnVisibility() async {
@@ -326,12 +428,12 @@ class _CalculatorPageState extends State<CalculatorPage>
               switch (value) {
                 case 'clear':
                   _clearFormData();
-                case 'load':
-                  _loadData();
                 case 'save':
-                  _saveData();
+                  _showSaveArchiveDialog();
                 case 'display_settings':
                   _showDisplaySettingsDialog();
+                case 'history_archives':
+                  _openHistoryArchives();
               }
             },
             itemBuilder: (context) => [
@@ -344,21 +446,21 @@ class _CalculatorPageState extends State<CalculatorPage>
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
+              PopupMenuItem(
+                value: 'history_archives',
+                child: ListTile(
+                  leading: const Icon(Icons.history),
+                  title: Text(loc.historyArchives),
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
               const PopupMenuDivider(),
               PopupMenuItem(
                 value: 'clear',
                 child: ListTile(
                   leading: const Icon(Icons.delete),
                   title: Text(loc.clearInputFields),
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              PopupMenuItem(
-                value: 'load',
-                child: ListTile(
-                  leading: const Icon(Icons.download),
-                  title: Text(loc.loadData),
                   dense: true,
                   contentPadding: EdgeInsets.zero,
                 ),

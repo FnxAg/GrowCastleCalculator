@@ -27,10 +27,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get taDefault => '城弓（默认）';
 
   @override
-  String get clearInputFields => '清空所有输入';
-
-  @override
-  String get loadData => '载入数据';
+  String get clearInputFields => '清空输入';
 
   @override
   String get currentWave => '当前波数';
@@ -329,4 +326,40 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get seasonalColony => '赛季殖民地';
+
+  @override
+  String get historyArchives => '历史存档';
+
+  @override
+  String get archiveName => '存档名称';
+
+  @override
+  String get load => '加载';
+
+  @override
+  String get rename => '重命名';
+
+  @override
+  String get delete => '删除';
+
+  @override
+  String get noArchives => '暂无存档';
+
+  @override
+  String get renameArchive => '重命名存档';
+
+  @override
+  String get saveArchive => '保存存档';
+
+  @override
+  String get enterArchiveName => '输入存档名称';
+
+  @override
+  String get deleteArchiveConfirm => '确定要删除此存档吗？此操作无法撤销。';
+
+  @override
+  String get loadArchiveConfirm => '加载此存档将覆盖当前数据，确定继续吗？';
+
+  @override
+  String get currentWaveValue => '当前波数：';
 }

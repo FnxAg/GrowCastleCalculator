@@ -5,8 +5,7 @@
     "settings": "设置",
     "castleDefault": "城堡（默认）",
     "taDefault": "城弓（默认）",
-    "clearInputFields": "清空所有输入",
-    "loadData": "载入数据",
+    "clearInputFields": "清空输入",
     "currentWave": "当前波数",
     "enterCurrentWave": "输入当前波数",
     "seasonalWave": "赛季波数",
@@ -42,6 +41,7 @@
     "exportData": "导出数据",
     "importData": "导入数据",
     "exportSuccess": "数据导出成功",
+    "exportFailed": "Failed to export data",
     "importSuccess": "数据导入成功",
     "importFailed": "数据导入失败",
     "invalidDataFormat": "无效的文件格式",
@@ -123,6 +123,17 @@
     "timeAutoBattle": "时挂 (TAB)",
     "tabHourDay": "每日时挂时长 (h)",
     "goldenTree": "金币大树",
-    "seasonalColony": "赛季殖民地"
-
+    "seasonalColony": "赛季殖民地",
+    "historyArchives": "历史存档",
+    "archiveName": "存档名称",
+    "load": "加载",
+    "rename": "重命名",
+    "delete": "删除",
+    "noArchives": "暂无存档",
+    "renameArchive": "重命名存档",
+    "saveArchive": "保存存档",
+    "enterArchiveName": "输入存档名称",
+    "deleteArchiveConfirm": "确定要删除此存档吗？此操作无法撤销。",
+    "loadArchiveConfirm": "加载此存档将覆盖当前数据，确定继续吗？",
+    "currentWaveValue": "当前波数："
 }
