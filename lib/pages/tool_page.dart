@@ -14,30 +14,6 @@ class ToolPage extends StatefulWidget {
 }
 
 class _ToolPageState extends State<ToolPage> {
-  Route _fadeRoute(Widget page) {
-    return PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 200),
-      reverseTransitionDuration: const Duration(milliseconds: 150),
-      pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final curved = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOut,
-        );
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.25, 0),
-            end: Offset.zero,
-          ).animate(curved),
-          child: FadeTransition(
-            opacity: Tween<double>(begin: 0, end: 1).animate(curved),
-            child: child,
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,7 +47,9 @@ class _ToolPageState extends State<ToolPage> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      _fadeRoute(const GoldCalculator()),
+                      MaterialPageRoute(
+                        builder: (context) => const GoldCalculator(),
+                      ),
                     );
                   },
                 );
@@ -84,7 +62,9 @@ class _ToolPageState extends State<ToolPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  _fadeRoute(const WaveSpeedQueryPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const WaveSpeedQueryPage(),
+                  ),
                 );
               },
             ),
