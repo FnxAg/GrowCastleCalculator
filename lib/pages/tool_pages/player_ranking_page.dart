@@ -100,6 +100,20 @@ class _PlayerRankingPageState extends State<PlayerRankingPage>
                 child: CircularProgressIndicator(strokeWidth: 2),
               ),
             ),
+          if (_errorMessage != null)
+            IconButton(
+              icon: Icon(Icons.warning_amber, color: Colors.orange.shade300),
+              tooltip: _errorMessage,
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_errorMessage!),
+                    duration: const Duration(seconds: 3),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
           if (!_isLoading)
             IconButton(
               icon: const Icon(Icons.refresh),
@@ -111,51 +125,26 @@ class _PlayerRankingPageState extends State<PlayerRankingPage>
             ),
         ],
       ),
-      body: _isLoading
+      body: _isLoading && _players.isEmpty
           ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _errorMessage!,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _isLoading = true;
-                            _errorMessage = null;
-                          });
-                          _fetchPlayers();
-                        },
-                        child: Text(loc.getInfo),
-                      ),
-                    ],
+          : CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                    child: _buildHeaderCard(theme, loc),
                   ),
-                )
-              : CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-                        child: _buildHeaderCard(theme, loc),
-                      ),
-                    ),
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) => _buildPlayerCard(
-                            context, index, theme, progress.seasonProgress),
-                        childCount: _players.length,
-                      ),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 80)),
-                  ],
                 ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => _buildPlayerCard(
+                        context, index, theme, progress.seasonProgress),
+                    childCount: _players.length,
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 80)),
+              ],
+            ),
     );
   }
 

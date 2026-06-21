@@ -117,7 +117,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get exportSuccess => '数据导出成功';
 
   @override
-  String get exportFailed => 'Failed to export data';
+  String get exportFailed => '数据导出失败';
 
   @override
   String get importSuccess => '数据导入成功';
@@ -201,7 +201,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get version => '版本';
 
   @override
-  String get developer => 'by FnxAg aka Ariyara';
+  String get developer => 'by FnxAg aka Ariyara\n🐾欢迎加入POC谢谢喵🐾';
 
   @override
   String appVersion(String versionNumber) {
@@ -235,7 +235,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goldCalculator => '收入计算器';
 
   @override
-  String get waveSpeedQuery => '波速查询';
+  String get waveSpeedQuery => '波速估算';
 
   @override
   String get inherit => '继承';
@@ -424,7 +424,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get seasonalScore => '赛季波';
 
   @override
-  String get seasonalWph => '赛季波速';
+  String get seasonalWph => 'WPH';
 
   @override
   String get guildSubscription => '订阅公会信息';

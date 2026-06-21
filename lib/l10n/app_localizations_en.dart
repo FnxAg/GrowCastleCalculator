@@ -202,7 +202,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get version => 'Version';
 
   @override
-  String get developer => 'by FnxAg aka Ariyara';
+  String get developer => 'by FnxAg aka Ariyara\n🐾Welcome to POC!🐾';
 
   @override
   String appVersion(String versionNumber) {
@@ -424,10 +424,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guildName => 'Guild Name';
 
   @override
-  String get seasonalScore => 'Seasonal Score';
+  String get seasonalScore => 'Seasonal Wave';
 
   @override
-  String get seasonalWph => 'Seasonal WPH';
+  String get seasonalWph => 'WPH';
 
   @override
   String get guildSubscription => 'Guild Subscription';

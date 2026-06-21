@@ -71,35 +71,35 @@ class _GuildDetailPageState extends State<GuildDetailPage> {
         title: Text(widget.guildName),
         elevation: 1,
         backgroundColor: theme.scaffoldBackgroundColor,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        _errorMessage!,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _isLoading = true;
-                            _errorMessage = null;
-                          });
-                          _fetchMembers();
-                        },
-                        child: Text(loc.getInfo),
-                      ),
-                    ],
+        actions: [
+          if (_isLoading)
+            const Padding(
+              padding: EdgeInsets.only(right: 12),
+              child: SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          if (_errorMessage != null)
+            IconButton(
+              icon: Icon(Icons.warning_amber, color: Colors.orange.shade300),
+              tooltip: _errorMessage,
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(_errorMessage!),
+                    duration: const Duration(seconds: 3),
+                    behavior: SnackBarBehavior.floating,
                   ),
-                )
-              : CustomScrollView(
+                );
+              },
+            ),
+        ],
+      ),
+      body: _isLoading && _members.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : CustomScrollView(
                   slivers: [
                     // ── Header ──────────────────────────────────────────
                     SliverToBoxAdapter(

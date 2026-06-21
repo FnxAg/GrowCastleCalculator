@@ -103,6 +103,20 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
                   child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
+            if (_errorMessage != null)
+              IconButton(
+                icon: Icon(Icons.warning_amber, color: Colors.orange.shade300),
+                tooltip: _errorMessage,
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(_errorMessage!),
+                      duration: const Duration(seconds: 3),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
             if (!_isLoading)
               IconButton(
                 icon: const Icon(Icons.refresh),
@@ -114,34 +128,9 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
               ),
           ],
         ),
-        body: _isLoading
+        body: _isLoading && _guilds.isEmpty
             ? const Center(child: CircularProgressIndicator())
-            : _errorMessage != null
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _errorMessage!,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _isLoading = true;
-                              _errorMessage = null;
-                            });
-                            _fetchGuilds();
-                          },
-                          child: Text(loc.getInfo),
-                        ),
-                      ],
-                    ),
-                  )
-                : CustomScrollView(
+            : CustomScrollView(
                     slivers: [
                       // ── Header row ────────────────────────────────────
                       SliverToBoxAdapter(

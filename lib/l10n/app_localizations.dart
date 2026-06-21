@@ -479,7 +479,7 @@ abstract class AppLocalizations {
   /// No description provided for @developer.
   ///
   /// In en, this message translates to:
-  /// **'by FnxAg aka Ariyara'**
+  /// **'by FnxAg aka Ariyara\n🐾Welcome to POC!🐾'**
   String get developer;
 
   /// No description provided for @appVersion.
@@ -911,13 +911,13 @@ abstract class AppLocalizations {
   /// No description provided for @seasonalScore.
   ///
   /// In en, this message translates to:
-  /// **'Seasonal Score'**
+  /// **'Seasonal Wave'**
   String get seasonalScore;
 
   /// No description provided for @seasonalWph.
   ///
   /// In en, this message translates to:
-  /// **'Seasonal WPH'**
+  /// **'WPH'**
   String get seasonalWph;
 
   /// No description provided for @guildSubscription.

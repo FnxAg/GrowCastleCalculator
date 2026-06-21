@@ -229,7 +229,7 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
                                       ),
                                       const SizedBox(width: 12),
                                       _summaryChip(
-                                        loc.wph,
+                                        loc.seasonalWph,
                                         wphValue,
                                         theme,
                                       ),

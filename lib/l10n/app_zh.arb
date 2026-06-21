@@ -41,7 +41,7 @@
     "exportData": "导出数据",
     "importData": "导入数据",
     "exportSuccess": "数据导出成功",
-    "exportFailed": "Failed to export data",
+    "exportFailed": "数据导出失败",
     "importSuccess": "数据导入成功",
     "importFailed": "数据导入失败",
     "invalidDataFormat": "无效的文件格式",
@@ -69,7 +69,7 @@
     "newVersionAvailable": "有新版本可用",
     "about": "关于",
     "version": "版本",
-    "developer": "by FnxAg aka Ariyara",
+    "developer": "by FnxAg aka Ariyara\n🐾欢迎加入POC谢谢喵🐾",
     "appVersion": "版本 {versionNumber}",
     "@appVersion": {
         "placeholders": {
@@ -93,7 +93,7 @@
     "zh_CN_withCode": "zh_CN\t简体中文",
     "en_withCode": "en\tEnglish",
     "goldCalculator": "收入计算器",
-    "waveSpeedQuery": "波速查询",
+    "waveSpeedQuery": "波速估算",
     "inherit": "继承",
     "gabCost": "金挂成本：",
     "goldDay": "每日收入：",
@@ -156,7 +156,7 @@
     "rank": "排名",
     "guildName": "公会名称",
     "seasonalScore": "赛季波",
-    "seasonalWph": "赛季波速",
+    "seasonalWph": "WPH",
     "guildSubscription": "订阅公会信息",
     "subscribe": "订阅"
 }

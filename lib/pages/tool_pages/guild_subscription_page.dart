@@ -27,6 +27,7 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
   int _totalScore = 0;
   List<GuildMember> _members = [];
   DateTime? _lastUpdateTime;
+  String? _errorMessage;
 
   DateTime _now = DateTime.now();
   late Timer _clockTimer;
@@ -160,8 +161,13 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
           _totalScore =
               members.fold<int>(0, (sum, m) => sum + m.score);
           _lastUpdateTime = DateTime.now();
+          _errorMessage = null;
+        case TimeoutError():
+          _errorMessage = 'Timeout';
+        case NetworkError(:final message):
+          _errorMessage = message;
         default:
-          break;
+          _errorMessage = 'Unknown error';
       }
     });
   }
@@ -195,6 +201,23 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
             title: Text(loc.guildSubscription),
             elevation: 1,
             backgroundColor: theme.scaffoldBackgroundColor,
+            actions: [
+              if (_errorMessage != null)
+                IconButton(
+                  icon: Icon(Icons.warning_amber,
+                      color: Colors.orange.shade300),
+                  tooltip: _errorMessage,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(_errorMessage!),
+                        duration: const Duration(seconds: 3),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                ),
+            ],
           ),
           body: CustomScrollView(
             slivers: [
