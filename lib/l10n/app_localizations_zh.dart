@@ -48,16 +48,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterCurrentSeasonalWave => '输入当前赛季波数';
 
   @override
-  String get totalWave => '总波数：';
+  String get totalWave => '总波数';
 
   @override
-  String get totalGold => '总经济：';
+  String get totalGold => '总经济';
 
   @override
-  String get gp => 'GP：';
+  String get gp => 'GP';
 
   @override
-  String get ratio => '指数：';
+  String get ratio => '指数';
 
   @override
   String get seasonProgress => '赛季进度：';
@@ -78,7 +78,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get timeTillReset => '重置倒计时：';
 
   @override
-  String get wph => '波速：';
+  String get wph => '波速';
 
   @override
   String unitName(int index) {
@@ -241,10 +241,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get inherit => '继承';
 
   @override
-  String get gabCost => '金挂成本：';
+  String get gabCost => '金挂成本';
 
   @override
-  String get goldDay => '每日收入：';
+  String get goldDay => '每日收入';
 
   @override
   String get gameSpeed => '游戏速度';
@@ -283,19 +283,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get extraColonyGold => '额外殖民地G';
 
   @override
-  String get secCart => '每车时间：';
+  String get secCart => '每车时间';
 
   @override
-  String get goldCart => '每车金币：';
+  String get goldCart => '每车金币';
 
   @override
-  String get cartHour => '每小时小推车数量：';
+  String get cartHour => '每小时小推车数量';
 
   @override
-  String get icRatio => '通天塔比例：';
+  String get icRatio => '通天塔比例';
 
   @override
-  String get goldHour => '小时收入：';
+  String get goldHour => '小时收入';
 
   @override
   String get goldAutoBattle => '金挂 (GAB)';
@@ -313,7 +313,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterProfit => '输入收益百分比';
 
   @override
-  String get goldWave => '每波收益：';
+  String get goldWave => '每波收益';
 
   @override
   String get timeAutoBattle => '时挂 (TAB)';
@@ -361,7 +361,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loadArchiveConfirm => '加载此存档将覆盖当前数据，确定继续吗？';
 
   @override
-  String get currentWaveValue => '当前波数：';
+  String get currentWaveValue => '当前波数';
 
   @override
   String get onlineQuery => '在线查询';
@@ -382,7 +382,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooManyRequests => '请求过于频繁，请稍后再试';
 
   @override
-  String get queryTime => '查询时间：';
+  String get queryTime => '查询时间';
 
   @override
   String get queryResult => '查询结果';

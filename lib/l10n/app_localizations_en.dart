@@ -48,16 +48,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterCurrentSeasonalWave => 'Enter Current Seasonal Wave';
 
   @override
-  String get totalWave => 'Total Wave: ';
+  String get totalWave => 'Total Wave';
 
   @override
-  String get totalGold => 'Total Gold: ';
+  String get totalGold => 'Total Gold';
 
   @override
-  String get gp => 'GP: ';
+  String get gp => 'GP';
 
   @override
-  String get ratio => 'Ratio: ';
+  String get ratio => 'Ratio';
 
   @override
   String get seasonProgress => 'Season Progress: ';
@@ -78,7 +78,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timeTillReset => 'Time Till Reset: ';
 
   @override
-  String get wph => 'WPH: ';
+  String get wph => 'WPH';
 
   @override
   String unitName(int index) {
@@ -242,10 +242,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inherit => 'Inherit';
 
   @override
-  String get gabCost => 'GAB Cost: ';
+  String get gabCost => 'GAB Cost';
 
   @override
-  String get goldDay => 'Gold/Day: ';
+  String get goldDay => 'Gold/Day';
 
   @override
   String get gameSpeed => 'Game Speed';
@@ -284,19 +284,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extraColonyGold => 'Colony Gold+';
 
   @override
-  String get secCart => 'Sec/Cart: ';
+  String get secCart => 'Sec/Cart';
 
   @override
-  String get goldCart => 'Gold/Cart: ';
+  String get goldCart => 'Gold/Cart';
 
   @override
-  String get cartHour => 'Carts/Hour: ';
+  String get cartHour => 'Carts/Hour';
 
   @override
-  String get icRatio => 'IC Ratio: ';
+  String get icRatio => 'IC Ratio';
 
   @override
-  String get goldHour => 'Gold/Hour: ';
+  String get goldHour => 'Gold/Hour';
 
   @override
   String get goldAutoBattle => 'Gold Auto Battle';
@@ -314,7 +314,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterProfit => 'Enter Profit Percentage';
 
   @override
-  String get goldWave => 'Gold/Wave: ';
+  String get goldWave => 'Gold/Wave';
 
   @override
   String get timeAutoBattle => 'Time Auto Battle';
@@ -364,7 +364,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Loading this archive will overwrite current data. Continue?';
 
   @override
-  String get currentWaveValue => 'Wave: ';
+  String get currentWaveValue => 'Wave';
 
   @override
   String get onlineQuery => 'Online Query';
@@ -385,7 +385,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooManyRequests => 'Too many requests, please try again later';
 
   @override
-  String get queryTime => 'Query Time: ';
+  String get queryTime => 'Query Time';
 
   @override
   String get queryResult => 'Query Result';

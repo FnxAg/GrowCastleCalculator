@@ -179,25 +179,25 @@ abstract class AppLocalizations {
   /// No description provided for @totalWave.
   ///
   /// In en, this message translates to:
-  /// **'Total Wave: '**
+  /// **'Total Wave'**
   String get totalWave;
 
   /// No description provided for @totalGold.
   ///
   /// In en, this message translates to:
-  /// **'Total Gold: '**
+  /// **'Total Gold'**
   String get totalGold;
 
   /// No description provided for @gp.
   ///
   /// In en, this message translates to:
-  /// **'GP: '**
+  /// **'GP'**
   String get gp;
 
   /// No description provided for @ratio.
   ///
   /// In en, this message translates to:
-  /// **'Ratio: '**
+  /// **'Ratio'**
   String get ratio;
 
   /// No description provided for @seasonProgress.
@@ -239,7 +239,7 @@ abstract class AppLocalizations {
   /// No description provided for @wph.
   ///
   /// In en, this message translates to:
-  /// **'WPH: '**
+  /// **'WPH'**
   String get wph;
 
   /// No description provided for @unitName.
@@ -551,13 +551,13 @@ abstract class AppLocalizations {
   /// No description provided for @gabCost.
   ///
   /// In en, this message translates to:
-  /// **'GAB Cost: '**
+  /// **'GAB Cost'**
   String get gabCost;
 
   /// No description provided for @goldDay.
   ///
   /// In en, this message translates to:
-  /// **'Gold/Day: '**
+  /// **'Gold/Day'**
   String get goldDay;
 
   /// No description provided for @gameSpeed.
@@ -635,31 +635,31 @@ abstract class AppLocalizations {
   /// No description provided for @secCart.
   ///
   /// In en, this message translates to:
-  /// **'Sec/Cart: '**
+  /// **'Sec/Cart'**
   String get secCart;
 
   /// No description provided for @goldCart.
   ///
   /// In en, this message translates to:
-  /// **'Gold/Cart: '**
+  /// **'Gold/Cart'**
   String get goldCart;
 
   /// No description provided for @cartHour.
   ///
   /// In en, this message translates to:
-  /// **'Carts/Hour: '**
+  /// **'Carts/Hour'**
   String get cartHour;
 
   /// No description provided for @icRatio.
   ///
   /// In en, this message translates to:
-  /// **'IC Ratio: '**
+  /// **'IC Ratio'**
   String get icRatio;
 
   /// No description provided for @goldHour.
   ///
   /// In en, this message translates to:
-  /// **'Gold/Hour: '**
+  /// **'Gold/Hour'**
   String get goldHour;
 
   /// No description provided for @goldAutoBattle.
@@ -695,7 +695,7 @@ abstract class AppLocalizations {
   /// No description provided for @goldWave.
   ///
   /// In en, this message translates to:
-  /// **'Gold/Wave: '**
+  /// **'Gold/Wave'**
   String get goldWave;
 
   /// No description provided for @timeAutoBattle.
@@ -791,7 +791,7 @@ abstract class AppLocalizations {
   /// No description provided for @currentWaveValue.
   ///
   /// In en, this message translates to:
-  /// **'Wave: '**
+  /// **'Wave'**
   String get currentWaveValue;
 
   /// No description provided for @onlineQuery.
@@ -833,7 +833,7 @@ abstract class AppLocalizations {
   /// No description provided for @queryTime.
   ///
   /// In en, this message translates to:
-  /// **'Query Time: '**
+  /// **'Query Time'**
   String get queryTime;
 
   /// No description provided for @queryResult.
