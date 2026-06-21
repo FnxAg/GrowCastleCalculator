@@ -431,6 +431,24 @@ class PlayerApiService {
     }
   }
 
+  /// Formats the time elapsed since [rawDate] (ISO 8601 UTC).
+  ///
+  /// Returns e.g. "30s", "5min", "6h", "3d". Units are locale-independent.
+  static String formatLastOnline(String rawDate, DateTime now) {
+    if (rawDate.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(rawDate);
+      final diff = now.difference(dt);
+      if (diff.inDays > 0) return '${diff.inDays}d';
+      if (diff.inHours > 0) return '${diff.inHours}h';
+      if (diff.inMinutes > 0) return '${diff.inMinutes}min';
+      final secs = diff.inSeconds;
+      return '${secs > 0 ? secs : 0}s';
+    } catch (_) {
+      return '';
+    }
+  }
+
   /// Parses [value] to int, handling both `int` and `String` representations.
   static int _parseInt(dynamic value) {
     if (value is int) return value;

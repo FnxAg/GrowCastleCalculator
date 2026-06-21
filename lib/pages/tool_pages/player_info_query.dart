@@ -6,7 +6,10 @@ import 'package:grow_castle_calculator/services/player_api_service.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
 
 class PlayerInfoQueryPage extends StatefulWidget {
-  const PlayerInfoQueryPage({super.key});
+  const PlayerInfoQueryPage({super.key, this.initialName});
+
+  /// If provided, the page auto-queries this name on init.
+  final String? initialName;
 
   static const int seasonHours = 120;
 
@@ -14,7 +17,8 @@ class PlayerInfoQueryPage extends StatefulWidget {
   State<PlayerInfoQueryPage> createState() => _PlayerInfoQueryPageState();
 }
 
-class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
+class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage>
+    with WidgetsBindingObserver {
   final TextEditingController _gameNameController = TextEditingController();
 
   bool _isQuerying = false;
@@ -24,23 +28,50 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
   int _queriedWave = 0;
   int _queriedScore = 0;
   String? _queryDate;
+  String _rawQueryDate = '';
 
   DateTime _now = DateTime.now();
   late Timer _timer;
+  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _timer = Timer.periodic(const Duration(seconds: 5), (_) {
       setState(() => _now = DateTime.now());
     });
+    if (widget.initialName != null && widget.initialName!.isNotEmpty) {
+      _gameNameController.text = widget.initialName!;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _queryPlayer());
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _gameNameController.dispose();
     _timer.cancel();
+    _autoRefreshTimer?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.inactive) {
+      _autoRefreshTimer?.cancel();
+    } else if (state == AppLifecycleState.resumed && _hasResult) {
+      _startAutoRefresh();
+    }
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _queryPlayer();
+    });
   }
 
   Future<void> _queryPlayer() async {
@@ -48,7 +79,6 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
     final name = _gameNameController.text.trim();
     if (name.isEmpty) return;
 
-    // Debounce: prevent requests within 3 seconds.
     final now = DateTime.now();
     if (_lastQueryTime != null &&
         now.difference(_lastQueryTime!).inSeconds < 3) {
@@ -71,8 +101,10 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
               :final queryDate):
           _queriedWave = wave;
           _queriedScore = seasonalScore;
+          _rawQueryDate = queryDate;
           _queryDate = _formatQueryDate(queryDate);
           _hasResult = true;
+          _startAutoRefresh();
         default:
           _hasResult = false;
           _showToast(loc.nameNotFound);
@@ -90,7 +122,6 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
     );
   }
 
-  /// Parses an ISO 8601 UTC timestamp string and formats it as local time.
   String _formatQueryDate(String raw) {
     if (raw.isEmpty) return raw;
     try {
@@ -113,6 +144,9 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
             .toStringAsFixed(2)
         : '—';
 
+    final lastOnline =
+        PlayerApiService.formatLastOnline(_rawQueryDate, _now);
+
     return PopScope(
       child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
@@ -121,6 +155,17 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
             title: Text(loc.playerInfoQuery),
             elevation: 1,
             backgroundColor: theme.scaffoldBackgroundColor,
+            actions: [
+              if (_isQuerying)
+                const Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+            ],
           ),
           body: CustomScrollView(
             slivers: [
@@ -130,7 +175,6 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ── Game name + query button ──────────────────────
                       Row(
                         children: [
                           Expanded(
@@ -169,8 +213,8 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
                       // ── Query result card ─────────────────────────────
                       Card(
                         elevation: 0,
-                        color: theme
-                            .colorScheme.surfaceContainerHighest,
+                        color:
+                            theme.colorScheme.surfaceContainerHighest,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -229,8 +273,14 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage> {
                                       ),
                                       const SizedBox(width: 12),
                                       _summaryChip(
-                                        loc.seasonalWph,
+                                        loc.wph,
                                         wphValue,
+                                        theme,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      _summaryChip(
+                                        'Online',
+                                        lastOnline,
                                         theme,
                                       ),
                                     ],

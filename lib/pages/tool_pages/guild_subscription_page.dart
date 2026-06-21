@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/services/player_api_service.dart';
+import 'package:grow_castle_calculator/pages/tool_pages/player_info_query.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
 
@@ -26,6 +27,7 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
   String _guildName = '';
   int _totalScore = 0;
   List<GuildMember> _members = [];
+  Map<String, String> _lastOnline = {};
   DateTime? _lastUpdateTime;
   String? _errorMessage;
 
@@ -93,6 +95,8 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
           _fetchTimer = Timer.periodic(const Duration(seconds: 10), (_) {
             _fetchMembers();
           });
+
+          _fetchLastOnline(members);
         default:
           break;
       }
@@ -133,6 +137,9 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
           // Persist guild name.
           PreferencesService.saveGuildSubscriptionName(name);
 
+          // Fetch last-online for members.
+          _fetchLastOnline(members);
+
           // Start auto-refresh.
           _fetchTimer?.cancel();
           _fetchTimer = Timer.periodic(const Duration(seconds: 10), (_) {
@@ -146,6 +153,25 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
           break;
       }
     });
+  }
+
+  Future<void> _fetchLastOnline(List<GuildMember> members) async {
+    final results = await Future.wait(
+      members.map((m) => PlayerApiService.query(m.name)),
+    );
+
+    if (!mounted) return;
+
+    final online = <String, String>{};
+    for (int i = 0; i < members.length; i++) {
+      final r = results[i];
+      if (r is PlayerQueryResult) {
+        online[members[i].name] =
+            PlayerApiService.formatLastOnline(r.queryDate, _now);
+      }
+    }
+
+    setState(() => _lastOnline = online);
   }
 
   Future<void> _fetchMembers() async {
@@ -170,6 +196,10 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
           _errorMessage = 'Unknown error';
       }
     });
+
+    if (result is List<GuildMember>) {
+      _fetchLastOnline(result);
+    }
   }
 
   void _showToast(String message) {
@@ -405,6 +435,18 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
                 ),
               ),
             ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 52,
+              child: Text(
+                'Online',
+                textAlign: TextAlign.end,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -420,6 +462,7 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
                 (GuildSubscriptionPage.seasonHours * seasonProgress))
             .toStringAsFixed(0)
         : '—';
+    final online = _lastOnline[member.name] ?? '';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
@@ -431,14 +474,25 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
             color: theme.colorScheme.outlineVariant.withAlpha(80),
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 48,
-                child: Text(
-                  rank.toString(),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    PlayerInfoQueryPage(initialName: member.name),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 48,
+                  child: Text(
+                    rank.toString(),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: rank <= 3
@@ -477,9 +531,21 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
+              SizedBox(
+                width: 52,
+                child: Text(
+                  online,
+                  textAlign: TextAlign.end,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
+      ),
       ),
     );
   }

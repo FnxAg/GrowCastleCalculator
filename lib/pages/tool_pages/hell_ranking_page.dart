@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator/pages/tool_pages/player_info_query.dart';
 import 'package:grow_castle_calculator/services/player_api_service.dart';
 
 class HellRankingPage extends StatefulWidget {
@@ -245,25 +246,35 @@ class _HellRankingPageState extends State<HellRankingPage>
             color: theme.colorScheme.outlineVariant.withAlpha(80),
           ),
         ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 48,
-                child: Text(
-                  player.rank.toString(),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: player.rank <= 3
-                        ? theme.colorScheme.primary
-                        : null,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PlayerInfoQueryPage(initialName: player.name),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 48,
+                  child: Text(
+                    player.rank.toString(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: player.rank <= 3
+                          ? theme.colorScheme.primary
+                          : null,
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Text(
-                  player.name,
+                Expanded(
+                  child: Text(
+                    player.name,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -285,6 +296,7 @@ class _HellRankingPageState extends State<HellRankingPage>
             ],
           ),
         ),
+      ),
       ),
     );
   }
