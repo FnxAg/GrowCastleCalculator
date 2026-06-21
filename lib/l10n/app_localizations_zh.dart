@@ -362,4 +362,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get currentWaveValue => '当前波数：';
+
+  @override
+  String get onlineQuery => '在线查询';
+
+  @override
+  String get freeInput => '自由输入';
+
+  @override
+  String get gameName => '游戏名称';
+
+  @override
+  String get getInfo => '获取信息';
+
+  @override
+  String get nameNotFound => '用户名不存在';
+
+  @override
+  String get tooManyRequests => '请求过于频繁，请稍后再试';
+
+  @override
+  String get queryTime => '查询时间：';
+
+  @override
+  String get queryResult => '查询结果';
+
+  @override
+  String get notQueried => '未查询';
+
+  @override
+  String get updateArchive => '更新当前存档';
+
+  @override
+  String get archiveCreated => '创建日期：';
+
+  @override
+  String get archiveUpdated => '最后更新：';
+
+  @override
+  String get modeLabel => '模式：';
 }

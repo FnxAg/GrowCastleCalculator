@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/models/calculator_archive.dart';
 import 'package:grow_castle_calculator/models/calculator_data.dart';
 import 'package:grow_castle_calculator/pages/history_archives_page.dart';
+import 'package:grow_castle_calculator/services/player_api_service.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
@@ -55,6 +56,17 @@ class _CalculatorPageState extends State<CalculatorPage>
   DateTime _now = DateTime.now();
   late Timer _timer;
 
+  // ── Player query state ──────────────────────────────────────────────────
+  bool _isOnlineQuery = true;
+  final TextEditingController _gameNameController = TextEditingController();
+  DateTime? _lastQueryTime;
+  bool _isQuerying = false;
+  String? _lastQueryDate;
+  int _queriedWave = 0;
+  int _queriedScore = 0;
+  bool _hasQueryResult = false;
+  String? _loadedArchiveId;
+
   // ── Controllers ────────────────────────────────────────────────────────
 
   final List<TextEditingController> _waveValueControllers =
@@ -98,6 +110,7 @@ class _CalculatorPageState extends State<CalculatorPage>
     for (final c in _defaultFormNameControllers) {
       c.dispose();
     }
+    _gameNameController.dispose();
     _timer.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -126,6 +139,13 @@ class _CalculatorPageState extends State<CalculatorPage>
       _targetName = _padList(data.targetName, '', _maxFormLimit - _defaultFormCount);
       _targetLevel = _padList(data.targetLevel, 10000, _maxFormLimit);
       _targetCheckbox = _padList(data.targetCheckbox, true, _maxFormLimit);
+      _isOnlineQuery = data.isOnlineQuery;
+      _gameNameController.text = data.gameName;
+      _queriedWave = data.queriedWave;
+      _queriedScore = data.queriedScore;
+      _lastQueryDate = data.lastQueryDate;
+      _hasQueryResult = data.hasQueryResult;
+      _loadedArchiveId = data.loadedArchiveId;
       _syncControllers();
     });
     // Load column visibility (UI preference, not in CalculatorData).
@@ -161,6 +181,13 @@ class _CalculatorPageState extends State<CalculatorPage>
         targetName: _targetName,
         targetLevel: _targetLevel,
         targetCheckbox: _targetCheckbox,
+        isOnlineQuery: _isOnlineQuery,
+        gameName: _gameNameController.text,
+        queriedWave: _queriedWave,
+        queriedScore: _queriedScore,
+        lastQueryDate: _lastQueryDate,
+        hasQueryResult: _hasQueryResult,
+        loadedArchiveId: _loadedArchiveId,
       ),
     );
   }
@@ -176,6 +203,12 @@ class _CalculatorPageState extends State<CalculatorPage>
       for (final c in _targetLevelControllers) {
         c.clear();
       }
+      _gameNameController.clear();
+      _hasQueryResult = false;
+      _queriedWave = 0;
+      _queriedScore = 0;
+      _lastQueryDate = null;
+      _loadedArchiveId = null;
     });
   }
 
@@ -185,8 +218,10 @@ class _CalculatorPageState extends State<CalculatorPage>
   /// archive.
   Future<void> _showSaveArchiveDialog() async {
     final loc = AppLocalizations.of(context)!;
-    final defaultName =
-        DateFormat('yyyy_MM_dd_HH_mm_ss').format(DateTime.now());
+    final gameName = _gameNameController.text.trim();
+    final defaultName = gameName.isNotEmpty
+        ? gameName
+        : DateFormat('yyyyMMddHHmmss').format(DateTime.now());
     final controller = TextEditingController(text: defaultName);
 
     final name = await showDialog<String>(
@@ -218,21 +253,32 @@ class _CalculatorPageState extends State<CalculatorPage>
     controller.dispose();
     if (name == null || name.trim().isEmpty) return;
 
+    final now = DateTime.now();
     final archive = CalculatorArchive(
-      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      id: now.microsecondsSinceEpoch.toString(),
       name: name.trim(),
-      savedAt: DateTime.now(),
+      savedAt: now,
+      updatedAt: now,
+      isOnlineQuery: _isOnlineQuery,
+      gameName: gameName,
       dynamicFormNum: _dynamicFormNum,
       waveValue: CalculatorPage.waveValue.toList(),
       targetName: _targetName.toList(),
       targetLevel: _targetLevel.toList(),
       targetCheckbox: _targetCheckbox.toList(),
       visibleColumns: _visibleColumns.toList(),
+      queriedWave: _queriedWave,
+      queriedScore: _queriedScore,
+      lastQueryDate: _lastQueryDate,
+      hasQueryResult: _hasQueryResult,
     );
 
     final archives = await PreferencesService.loadArchives();
     archives.insert(0, archive); // newest first
     await PreferencesService.saveArchives(archives);
+
+    _loadedArchiveId = archive.id;
+    _saveData();
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -272,10 +318,122 @@ class _CalculatorPageState extends State<CalculatorPage>
         _maxFormLimit,
       );
       _visibleColumns = archive.visibleColumns.toList();
+      _isOnlineQuery = archive.isOnlineQuery;
+      _gameNameController.text = archive.gameName;
+      _queriedWave = archive.queriedWave;
+      _queriedScore = archive.queriedScore;
+      _lastQueryDate = archive.lastQueryDate;
+      _hasQueryResult = archive.hasQueryResult;
+      _loadedArchiveId = archive.id;
       _syncControllers();
     });
     _saveData();
     _saveColumnVisibility();
+  }
+
+  Future<void> _updateCurrentArchive() async {
+    if (_loadedArchiveId == null) return;
+    final loc = AppLocalizations.of(context)!;
+    final archives = await PreferencesService.loadArchives();
+    final index = archives.indexWhere((a) => a.id == _loadedArchiveId);
+    if (index == -1) {
+      _loadedArchiveId = null;
+      return;
+    }
+
+    final old = archives[index];
+    final now = DateTime.now();
+    archives[index] = CalculatorArchive(
+      id: old.id,
+      name: old.name,
+      savedAt: old.savedAt,
+      updatedAt: now,
+      isOnlineQuery: _isOnlineQuery,
+      gameName: _gameNameController.text.trim(),
+      dynamicFormNum: _dynamicFormNum,
+      waveValue: CalculatorPage.waveValue.toList(),
+      targetName: _targetName.toList(),
+      targetLevel: _targetLevel.toList(),
+      targetCheckbox: _targetCheckbox.toList(),
+      visibleColumns: _visibleColumns.toList(),
+      queriedWave: _queriedWave,
+      queriedScore: _queriedScore,
+      lastQueryDate: _lastQueryDate,
+      hasQueryResult: _hasQueryResult,
+    );
+    await PreferencesService.saveArchives(archives);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${loc.updateArchive}: ${old.name}')),
+      );
+    }
+  }
+
+  // ── Player query ───────────────────────────────────────────────────────
+
+  Future<void> _queryPlayer() async {
+    final loc = AppLocalizations.of(context)!;
+    final name = _gameNameController.text.trim();
+    if (name.isEmpty) return;
+
+    // Debounce: prevent requests within 3 seconds.
+    final now = DateTime.now();
+    if (_lastQueryTime != null &&
+        now.difference(_lastQueryTime!).inSeconds < 3) {
+      _showToast(loc.tooManyRequests);
+      return;
+    }
+    _lastQueryTime = now;
+
+    setState(() => _isQuerying = true);
+
+    final result = await PlayerApiService.query(name);
+
+    if (!mounted) return;
+
+    setState(() => _isQuerying = false);
+
+    switch (result) {
+      case PlayerQueryResult(:final wave, :final seasonalScore,
+            :final queryDate):
+        _lastQueryDate = queryDate;
+        _queriedWave = wave;
+        _queriedScore = seasonalScore;
+        _hasQueryResult = true;
+
+        // Update wave values.
+        CalculatorPage.waveValue[0] = wave;
+        CalculatorPage.waveValue[1] = seasonalScore;
+        _waveValueControllers[0].text = wave.toString();
+        _waveValueControllers[1].text = seasonalScore.toString();
+        setState(() {});
+
+      case NameNotFound():
+        _showToast(loc.nameNotFound);
+        setState(() {});
+
+      case TimeoutError():
+        _showToast(loc.nameNotFound);
+        setState(() {});
+
+      case NetworkError():
+        _showToast(loc.nameNotFound);
+        setState(() {});
+
+      default:
+        setState(() {});
+    }
+  }
+
+  void _showToast(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   // ── Column visibility ──────────────────────────────────────────────────
@@ -434,9 +592,40 @@ class _CalculatorPageState extends State<CalculatorPage>
                   _showDisplaySettingsDialog();
                 case 'history_archives':
                   _openHistoryArchives();
+                case 'update_archive':
+                  _updateCurrentArchive();
+                case 'mode_online':
+                  setState(() => _isOnlineQuery = true);
+                case 'mode_free':
+                  setState(() => _isOnlineQuery = false);
               }
             },
             itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'mode_online',
+                child: ListTile(
+                  leading: const Icon(Icons.language),
+                  title: Text(loc.onlineQuery),
+                  trailing: _isOnlineQuery
+                      ? Icon(Icons.check, color: theme.colorScheme.primary)
+                      : null,
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              PopupMenuItem(
+                value: 'mode_free',
+                child: ListTile(
+                  leading: const Icon(Icons.edit),
+                  title: Text(loc.freeInput),
+                  trailing: !_isOnlineQuery
+                      ? Icon(Icons.check, color: theme.colorScheme.primary)
+                      : null,
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuDivider(),
               PopupMenuItem(
                 value: 'display_settings',
                 child: ListTile(
@@ -455,6 +644,17 @@ class _CalculatorPageState extends State<CalculatorPage>
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
+              if (_loadedArchiveId != null) ...[
+                PopupMenuItem(
+                  value: 'update_archive',
+                  child: ListTile(
+                    leading: const Icon(Icons.update),
+                    title: Text(loc.updateArchive),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
               const PopupMenuDivider(),
               PopupMenuItem(
                 value: 'clear',
@@ -490,49 +690,165 @@ class _CalculatorPageState extends State<CalculatorPage>
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   spacing: 8,
                   children: [
-                    // Wave value inputs
+                    // ── Game name + query button (always shown) ────────
                     Row(
                       spacing: 8,
                       children: [
                         Expanded(
+                          flex: 5,
                           child: TextField(
-                            controller: _waveValueControllers[0],
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
+                            controller: _gameNameController,
                             decoration: InputDecoration(
-                              labelText: loc.currentWave,
-                              hintText: loc.enterCurrentWave,
+                              labelText: loc.gameName,
+                              hintText: loc.gameName,
                               border: const OutlineInputBorder(),
                               isDense: true,
                             ),
-                            onChanged: (v) => setState(() {
-                              CalculatorPage.waveValue[0] =
-                                  convertStringToInt(v);
-                            }),
                           ),
                         ),
-                        Expanded(
-                          child: TextField(
-                            controller: _waveValueControllers[1],
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            decoration: InputDecoration(
-                              labelText: loc.currentSeasonalWave,
-                              hintText: loc.enterCurrentSeasonalWave,
-                              border: const OutlineInputBorder(),
-                              isDense: true,
-                            ),
-                            onChanged: (v) => setState(() {
-                              CalculatorPage.waveValue[1] =
-                                  convertStringToInt(v);
-                            }),
+                        SizedBox(
+                          height: 40,
+                          child: ElevatedButton(
+                            onPressed:
+                                _isQuerying ? null : _queryPlayer,
+                            child: _isQuerying
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.send, size: 18),
                           ),
                         ),
                       ],
+                    ),
+
+                    // ── Free-input wave fields ─────────────────────────
+                    if (!_isOnlineQuery)
+                      Row(
+                        spacing: 8,
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _waveValueControllers[0],
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              decoration: InputDecoration(
+                                labelText: loc.currentWave,
+                                hintText: loc.enterCurrentWave,
+                                border: const OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              onChanged: (v) => setState(() {
+                                CalculatorPage.waveValue[0] =
+                                    convertStringToInt(v);
+                              }),
+                            ),
+                          ),
+                          Expanded(
+                            child: TextField(
+                              controller: _waveValueControllers[1],
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                              ],
+                              decoration: InputDecoration(
+                                labelText: loc.currentSeasonalWave,
+                                hintText:
+                                    loc.enterCurrentSeasonalWave,
+                                border: const OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              onChanged: (v) => setState(() {
+                                CalculatorPage.waveValue[1] =
+                                    convertStringToInt(v);
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                    // ── Query result card (always shown) ───────────
+                    Card(
+                      elevation: 0,
+                      color: theme
+                          .colorScheme.surfaceContainerHighest,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        child: Column(
+                          spacing: 4,
+                          children: [
+                            Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  loc.queryResult,
+                                  style: theme
+                                      .textTheme.bodyMedium
+                                      ?.copyWith(
+                                    color: theme
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
+                                if (_lastQueryDate != null)
+                                  Text(
+                                    '$_lastQueryDate UTC',
+                                    style: theme
+                                        .textTheme.labelSmall
+                                        ?.copyWith(
+                                      color: theme
+                                          .colorScheme.primary,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const Divider(height: 1),
+                            if (_hasQueryResult)
+                              Row(
+                                children: [
+                                  _summaryChip(
+                                    loc.currentWave,
+                                    _queriedWave.toString(),
+                                    theme,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  _summaryChip(
+                                    loc.currentSeasonalWave,
+                                    _queriedScore.toString(),
+                                    theme,
+                                  ),
+                                ],
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 4),
+                                child: Text(
+                                  loc.notQueried,
+                                  style: theme
+                                      .textTheme.bodySmall
+                                      ?.copyWith(
+                                    color: theme
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
 
                     // Summary card

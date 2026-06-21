@@ -135,5 +135,18 @@
     "enterArchiveName": "输入存档名称",
     "deleteArchiveConfirm": "确定要删除此存档吗？此操作无法撤销。",
     "loadArchiveConfirm": "加载此存档将覆盖当前数据，确定继续吗？",
-    "currentWaveValue": "当前波数："
+    "currentWaveValue": "当前波数：",
+    "onlineQuery": "在线查询",
+    "freeInput": "自由输入",
+    "gameName": "游戏名称",
+    "getInfo": "获取信息",
+    "nameNotFound": "用户名不存在",
+    "tooManyRequests": "请求过于频繁，请稍后再试",
+    "queryTime": "查询时间：",
+    "queryResult": "查询结果",
+    "notQueried": "未查询",
+    "updateArchive": "更新当前存档",
+    "archiveCreated": "创建日期：",
+    "archiveUpdated": "最后更新：",
+    "modeLabel": "模式："
 }

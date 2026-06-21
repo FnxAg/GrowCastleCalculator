@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator/models/gold_calculator_archive.dart';
 import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
 import 'package:grow_castle_calculator/pages/calculator_page.dart';
+import 'package:grow_castle_calculator/pages/tool_pages/gold_history_archives_page.dart';
 import 'package:grow_castle_calculator/providers/gold_calculator_provider.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:grow_castle_calculator/utils/number_utils.dart';
@@ -127,6 +130,86 @@ class _GoldCalculatorState extends State<GoldCalculator>
         isExpanded: _isExpanded,
       ),
     );
+  }
+
+  // ── Archive operations ─────────────────────────────────────────────────
+
+  Future<void> _showSaveArchiveDialog() async {
+    final loc = AppLocalizations.of(context)!;
+    final defaultName =
+        DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+    final controller = TextEditingController(text: defaultName);
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(loc.saveArchive),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(
+            labelText: loc.archiveName,
+            hintText: loc.enterArchiveName,
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: Text(loc.save),
+          ),
+        ],
+      ),
+    );
+
+    controller.dispose();
+    if (name == null || name.trim().isEmpty) return;
+
+    final archive = GoldCalculatorArchive(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      name: name.trim(),
+      savedAt: DateTime.now(),
+      waveValue: _waveValue.toList(),
+      formField: _formField.toList(),
+      checkboxForm: _checkboxForm.toList(),
+      isExpanded: _isExpanded.toList(),
+    );
+
+    final archives = await PreferencesService.loadGoldArchives();
+    archives.insert(0, archive);
+    await PreferencesService.saveGoldArchives(archives);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${loc.saveArchive}: ${archive.name}')),
+      );
+    }
+  }
+
+  Future<void> _openHistoryArchives() async {
+    final archive = await Navigator.push<GoldCalculatorArchive>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const GoldHistoryArchivesPage(),
+      ),
+    );
+    if (archive != null) {
+      _applyArchive(archive);
+    }
+  }
+
+  void _applyArchive(GoldCalculatorArchive archive) {
+    _waveValue = archive.waveValue.toList();
+    _formField = _padList(archive.formField.toList(), 0, 9);
+    _checkboxForm = _padList(archive.checkboxForm.toList(), true, 4);
+    _isExpanded = _padList(archive.isExpanded.toList(), true, 4);
+    _syncControllers();
+    setState(() {});
+    _saveData();
   }
 
   // ── Build helpers ──────────────────────────────────────────────────────
@@ -253,6 +336,38 @@ class _GoldCalculatorState extends State<GoldCalculator>
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back),
           ),
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'save':
+                    _showSaveArchiveDialog();
+                  case 'history_archives':
+                    _openHistoryArchives();
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'history_archives',
+                  child: ListTile(
+                    leading: const Icon(Icons.history),
+                    title: Text(loc.historyArchives),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'save',
+                  child: ListTile(
+                    leading: const Icon(Icons.save),
+                    title: Text(loc.save),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),

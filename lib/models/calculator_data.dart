@@ -7,6 +7,13 @@ class CalculatorData {
   final List<String> targetName;
   final List<int> targetLevel;
   final List<bool> targetCheckbox;
+  final bool isOnlineQuery;
+  final String gameName;
+  final int queriedWave;
+  final int queriedScore;
+  final String? lastQueryDate;
+  final bool hasQueryResult;
+  final String? loadedArchiveId;
 
   const CalculatorData({
     required this.dynamicFormNum,
@@ -14,6 +21,13 @@ class CalculatorData {
     required this.targetName,
     required this.targetLevel,
     required this.targetCheckbox,
+    this.isOnlineQuery = true,
+    this.gameName = '',
+    this.queriedWave = 0,
+    this.queriedScore = 0,
+    this.lastQueryDate,
+    this.hasQueryResult = false,
+    this.loadedArchiveId,
   });
 
   /// Default values used when no saved data exists.
@@ -49,6 +63,13 @@ class CalculatorData {
               ?.map((e) => e == true || e == 'true')
               .toList() ??
           [],
+      isOnlineQuery: map['isOnlineQuery'] as bool? ?? true,
+      gameName: map['gameName'] as String? ?? '',
+      queriedWave: map['queriedWave'] as int? ?? 0,
+      queriedScore: map['queriedScore'] as int? ?? 0,
+      lastQueryDate: map['lastQueryDate'] as String?,
+      hasQueryResult: map['hasQueryResult'] as bool? ?? false,
+      loadedArchiveId: map['loadedArchiveId'] as String?,
     );
   }
 
@@ -59,6 +80,13 @@ class CalculatorData {
       'targetName': targetName,
       'targetLevel': targetLevel,
       'targetCheckbox': targetCheckbox,
+      'isOnlineQuery': isOnlineQuery,
+      'gameName': gameName,
+      'queriedWave': queriedWave,
+      'queriedScore': queriedScore,
+      'lastQueryDate': lastQueryDate,
+      'hasQueryResult': hasQueryResult,
+      'loadedArchiveId': loadedArchiveId,
     });
   }
 

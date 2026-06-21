@@ -52,7 +52,7 @@ String decreaseNumSize(double gold, BuildContext context) {
       zhResult = '${zhValue.toStringAsFixed(2)}${suffixesZhCn[zhIndex]}';
     }
 
-    result = '$zhResult | $result';
+    result = '$zhResult\n$result';
   }
 
   return result;

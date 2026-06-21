@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:grow_castle_calculator/models/calculator_archive.dart';
 import 'package:grow_castle_calculator/models/calculator_data.dart';
+import 'package:grow_castle_calculator/models/gold_calculator_archive.dart';
 import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
 import 'package:grow_castle_calculator/models/wave_speed_query_data.dart';
 
@@ -39,6 +40,7 @@ class PreferencesService {
   static const _keyGoldCalculatorData = 'gold_calculator_data';
   static const _keyWaveSpeedQueryData = 'wave_speed_query_data';
   static const _keyCalculatorArchives = 'calculator_archives';
+  static const _keyGoldCalculatorArchives = 'gold_calculator_archives';
 
   /// Old per-field keys — kept for migration.
   static const _legacyCalculatorKeys = [
@@ -61,6 +63,7 @@ class PreferencesService {
     _keyGoldCalculatorData,
     _keyWaveSpeedQueryData,
     _keyCalculatorArchives,
+    _keyGoldCalculatorArchives,
     ..._legacyCalculatorKeys,
     ..._legacyGoldCalculatorKeys,
   ];
@@ -223,6 +226,32 @@ class PreferencesService {
     await prefs.setString(_keyCalculatorArchives, json.encode(list));
   }
 
+  // ── Gold calculator archives ───────────────────────────────────────────
+
+  /// Loads all saved gold calculator archives.
+  static Future<List<GoldCalculatorArchive>> loadGoldArchives() async {
+    final prefs = await _prefs;
+    final jsonString = prefs.getString(_keyGoldCalculatorArchives);
+    if (jsonString == null || jsonString.isEmpty) return [];
+
+    try {
+      final list = json.decode(jsonString) as List<dynamic>;
+      return list
+          .map((e) => GoldCalculatorArchive.fromJson(json.encode(e)))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Saves the full list of gold calculator archives.
+  static Future<void> saveGoldArchives(
+      List<GoldCalculatorArchive> archives) async {
+    final prefs = await _prefs;
+    final list = archives.map((a) => a.toMap()).toList();
+    await prefs.setString(_keyGoldCalculatorArchives, json.encode(list));
+  }
+
   // ── Bulk operations ────────────────────────────────────────────────────
 
   /// Removes all app data (both old and new formats), but keeps locale/theme.
@@ -252,6 +281,10 @@ class PreferencesService {
     if (wsqJson != null) {
       data[_keyWaveSpeedQueryData] = wsqJson;
     }
+    final gcArchivesJson = prefs.getString(_keyGoldCalculatorArchives);
+    if (gcArchivesJson != null) {
+      data[_keyGoldCalculatorArchives] = gcArchivesJson;
+    }
 
     // Also export locale/theme for completeness.
     data[_keyLocaleChoice] = prefs.getInt(_keyLocaleChoice) ?? 0;
@@ -273,6 +306,10 @@ class PreferencesService {
     }
     if (data[_keyWaveSpeedQueryData] is String) {
       await prefs.setString(_keyWaveSpeedQueryData, data[_keyWaveSpeedQueryData]);
+    }
+    if (data[_keyGoldCalculatorArchives] is String) {
+      await prefs.setString(
+          _keyGoldCalculatorArchives, data[_keyGoldCalculatorArchives]);
     }
 
     // Locale / theme.

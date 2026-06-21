@@ -2,22 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator/models/calculator_archive.dart';
+import 'package:grow_castle_calculator/models/gold_calculator_archive.dart';
+import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
+import 'package:grow_castle_calculator/providers/gold_calculator_provider.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
-import 'package:grow_castle_calculator/utils/game_calculations.dart';
 import 'package:grow_castle_calculator/utils/number_utils.dart';
 
-/// Page that lists all saved calculator archives with options to load, rename,
-/// or delete each one.
-class HistoryArchivesPage extends StatefulWidget {
-  const HistoryArchivesPage({super.key});
+/// Page that lists all saved gold calculator archives with options to load,
+/// rename, or delete each one.
+class GoldHistoryArchivesPage extends StatefulWidget {
+  const GoldHistoryArchivesPage({super.key});
 
   @override
-  State<HistoryArchivesPage> createState() => _HistoryArchivesPageState();
+  State<GoldHistoryArchivesPage> createState() =>
+      _GoldHistoryArchivesPageState();
 }
 
-class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
-  List<CalculatorArchive> _archives = [];
+class _GoldHistoryArchivesPageState extends State<GoldHistoryArchivesPage> {
+  List<GoldCalculatorArchive> _archives = [];
 
   @override
   void initState() {
@@ -26,13 +28,13 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
   }
 
   Future<void> _loadArchives() async {
-    final archives = await PreferencesService.loadArchives();
+    final archives = await PreferencesService.loadGoldArchives();
     if (mounted) {
       setState(() => _archives = archives);
     }
   }
 
-  Future<void> _deleteArchive(CalculatorArchive archive) async {
+  Future<void> _deleteArchive(GoldCalculatorArchive archive) async {
     final loc = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
@@ -54,12 +56,12 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
 
     if (confirmed == true) {
       _archives.removeWhere((a) => a.id == archive.id);
-      await PreferencesService.saveArchives(_archives);
+      await PreferencesService.saveGoldArchives(_archives);
       if (mounted) setState(() {});
     }
   }
 
-  Future<void> _renameArchive(CalculatorArchive archive) async {
+  Future<void> _renameArchive(GoldCalculatorArchive archive) async {
     final loc = AppLocalizations.of(context)!;
     final controller = TextEditingController(text: archive.name);
 
@@ -94,73 +96,46 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
 
     final index = _archives.indexWhere((a) => a.id == archive.id);
     if (index != -1) {
-      _archives[index] = CalculatorArchive(
+      _archives[index] = GoldCalculatorArchive(
         id: archive.id,
         name: newName.trim(),
         savedAt: archive.savedAt,
-        updatedAt: archive.updatedAt,
-        isOnlineQuery: archive.isOnlineQuery,
-        gameName: archive.gameName,
-        dynamicFormNum: archive.dynamicFormNum,
         waveValue: archive.waveValue,
-        targetName: archive.targetName,
-        targetLevel: archive.targetLevel,
-        targetCheckbox: archive.targetCheckbox,
-        visibleColumns: archive.visibleColumns,
-        queriedWave: archive.queriedWave,
-        queriedScore: archive.queriedScore,
-        lastQueryDate: archive.lastQueryDate,
-        hasQueryResult: archive.hasQueryResult,
+        formField: archive.formField,
+        checkboxForm: archive.checkboxForm,
+        isExpanded: archive.isExpanded,
       );
-      await PreferencesService.saveArchives(_archives);
+      await PreferencesService.saveGoldArchives(_archives);
       if (mounted) setState(() {});
     }
   }
 
-  /// Computes the summary values for an archive.  Mirrors the logic in
-  /// [CalculatorPage._updateComputedValues].
-  _ArchiveSummary _computeSummary(CalculatorArchive archive) {
-    final targetGold = List.generate(
-      archive.targetLevel.length.clamp(0, archive.dynamicFormNum),
-      (i) => waveLevelSpendGold(
-        i < archive.targetLevel.length ? archive.targetLevel[i] : 10000,
-        i,
-      ),
+  /// Computes the summary values for a gold calculator archive.
+  _GoldArchiveSummary _computeSummary(GoldCalculatorArchive archive) {
+    final data = GoldCalculatorData(
+      waveValue: archive.waveValue,
+      formField: archive.formField,
+      checkboxForm: archive.checkboxForm,
+      isExpanded: archive.isExpanded,
     );
+    final dailyIncome = GoldCalculatorProvider.computeDailyIncome(data);
+    final wave =
+        archive.waveValue.isNotEmpty ? archive.waveValue[0] : 0;
+    final icLevel = archive.formField.length > 3
+        ? archive.formField[3].truncate().toString()
+        : '0';
 
-    final totalGold = targetGold
-        .asMap()
-        .entries
-        .where((e) =>
-            e.key < archive.dynamicFormNum &&
-            e.key < archive.targetCheckbox.length &&
-            archive.targetCheckbox[e.key])
-        .map((e) => e.value)
-        .fold<double>(0, (a, b) => a + b);
-
-    final wave = archive.waveValue.isNotEmpty ? archive.waveValue[0] : 0;
-    String totalGoldStr;
+    String dailyIncomeStr;
     try {
-      totalGoldStr = decreaseNumSize(totalGold, context);
+      dailyIncomeStr = decreaseNumSize(dailyIncome, context);
     } catch (_) {
-      totalGoldStr = totalGold.toStringAsFixed(0);
+      dailyIncomeStr = dailyIncome.toStringAsFixed(0);
     }
 
-    final gpValue = wave > 0
-        ? (totalGold /
-                (0.5 * (310 + wave * 310) * wave) *
-                100)
-            .toStringAsFixed(2)
-        : '0.00';
-    final ratioValue = wave > 0
-        ? (totalGold / (wave * wave)).toStringAsFixed(2)
-        : '0.00';
-
-    return _ArchiveSummary(
-      totalGold: totalGoldStr,
+    return _GoldArchiveSummary(
       wave: wave.toString(),
-      gp: gpValue,
-      ratio: ratioValue,
+      dailyIncome: dailyIncomeStr,
+      icLevel: icLevel,
     );
   }
 
@@ -185,7 +160,8 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
                     Icon(
                       Icons.archive_outlined,
                       size: 64,
-                      color: theme.colorScheme.onSurfaceVariant.withAlpha(100),
+                      color: theme.colorScheme.onSurfaceVariant
+                          .withAlpha(100),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -199,12 +175,14 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
               ),
             )
           : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               itemCount: _archives.length,
               itemBuilder: (context, index) {
                 final archive = _archives[index];
                 final summary = _computeSummary(archive);
-                return _buildArchiveCard(context, archive, summary, theme);
+                return _buildArchiveCard(
+                    context, archive, summary, theme);
               },
             ),
     );
@@ -212,17 +190,13 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
 
   Widget _buildArchiveCard(
     BuildContext context,
-    CalculatorArchive archive,
-    _ArchiveSummary summary,
+    GoldCalculatorArchive archive,
+    _GoldArchiveSummary summary,
     ThemeData theme,
   ) {
     final loc = AppLocalizations.of(context)!;
     final dateStr =
         DateFormat('yyyy-MM-dd HH:mm:ss').format(archive.savedAt);
-    final updateStr =
-        DateFormat('yyyy-MM-dd HH:mm:ss').format(archive.updatedAt);
-    final modeLabel =
-        archive.isOnlineQuery ? loc.onlineQuery : loc.freeInput;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -258,21 +232,9 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '${loc.archiveCreated}$dateStr',
+                            dateStr,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          Text(
-                            '${loc.archiveUpdated}$updateStr',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          Text(
-                            '${loc.modeLabel}$modeLabel',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: theme.colorScheme.primary,
                             ),
                           ),
                         ],
@@ -331,11 +293,13 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
                 child: Row(
                   children: [
-                    _summaryChip(loc.currentWaveValue, summary.wave, theme),
                     _summaryChip(
-                        loc.totalGold, summary.totalGold, theme, bold: true),
-                    _summaryChip(loc.gp, summary.gp, theme),
-                    _summaryChip(loc.ratio, summary.ratio, theme),
+                        loc.currentWave, summary.wave, theme),
+                    _summaryChip(
+                        loc.goldDay, summary.dailyIncome, theme,
+                        bold: true),
+                    _summaryChip(
+                        loc.icLevel, summary.icLevel, theme),
                   ],
                 ),
               ),
@@ -358,6 +322,8 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
               fontSize: 10,
               color: theme.colorScheme.onSurfaceVariant,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           Text(
             value,
@@ -375,7 +341,7 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
     );
   }
 
-  void _onLoadArchive(CalculatorArchive archive) {
+  void _onLoadArchive(GoldCalculatorArchive archive) {
     final loc = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -401,16 +367,15 @@ class _HistoryArchivesPageState extends State<HistoryArchivesPage> {
 }
 
 /// Lightweight data class for computed archive summary values.
-class _ArchiveSummary {
-  final String totalGold;
+class _GoldArchiveSummary {
   final String wave;
-  final String gp;
-  final String ratio;
+  final String dailyIncome;
+  final String icLevel;
 
-  const _ArchiveSummary({
-    required this.totalGold,
+  const _GoldArchiveSummary({
     required this.wave,
-    required this.gp,
-    required this.ratio,
+    required this.dailyIncome,
+    required this.icLevel,
   });
 }
+

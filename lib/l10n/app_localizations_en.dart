@@ -365,4 +365,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currentWaveValue => 'Wave: ';
+
+  @override
+  String get onlineQuery => 'Online Query';
+
+  @override
+  String get freeInput => 'Free Input';
+
+  @override
+  String get gameName => 'Game Name';
+
+  @override
+  String get getInfo => 'Get Info';
+
+  @override
+  String get nameNotFound => 'Name Not Found';
+
+  @override
+  String get tooManyRequests => 'Too many requests, please try again later';
+
+  @override
+  String get queryTime => 'Query Time: ';
+
+  @override
+  String get queryResult => 'Query Result';
+
+  @override
+  String get notQueried => 'Not Queried';
+
+  @override
+  String get updateArchive => 'Update Current Archive';
+
+  @override
+  String get archiveCreated => 'Created: ';
+
+  @override
+  String get archiveUpdated => 'Updated: ';
+
+  @override
+  String get modeLabel => 'Mode: ';
 }

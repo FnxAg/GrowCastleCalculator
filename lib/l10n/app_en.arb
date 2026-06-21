@@ -135,5 +135,18 @@
     "enterArchiveName": "Enter Archive Name",
     "deleteArchiveConfirm": "Delete this archive? This cannot be undone.",
     "loadArchiveConfirm": "Loading this archive will overwrite current data. Continue?",
-    "currentWaveValue": "Wave: "
+    "currentWaveValue": "Wave: ",
+    "onlineQuery": "Online Query",
+    "freeInput": "Free Input",
+    "gameName": "Game Name",
+    "getInfo": "Get Info",
+    "nameNotFound": "Name Not Found",
+    "tooManyRequests": "Too many requests, please try again later",
+    "queryTime": "Query Time: ",
+    "queryResult": "Query Result",
+    "notQueried": "Not Queried",
+    "updateArchive": "Update Current Archive",
+    "archiveCreated": "Created: ",
+    "archiveUpdated": "Updated: ",
+    "modeLabel": "Mode: "
 }

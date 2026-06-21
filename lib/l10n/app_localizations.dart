@@ -793,6 +793,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wave: '**
   String get currentWaveValue;
+
+  /// No description provided for @onlineQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Online Query'**
+  String get onlineQuery;
+
+  /// No description provided for @freeInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Free Input'**
+  String get freeInput;
+
+  /// No description provided for @gameName.
+  ///
+  /// In en, this message translates to:
+  /// **'Game Name'**
+  String get gameName;
+
+  /// No description provided for @getInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Info'**
+  String get getInfo;
+
+  /// No description provided for @nameNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Name Not Found'**
+  String get nameNotFound;
+
+  /// No description provided for @tooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many requests, please try again later'**
+  String get tooManyRequests;
+
+  /// No description provided for @queryTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Query Time: '**
+  String get queryTime;
+
+  /// No description provided for @queryResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Query Result'**
+  String get queryResult;
+
+  /// No description provided for @notQueried.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Queried'**
+  String get notQueried;
+
+  /// No description provided for @updateArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Current Archive'**
+  String get updateArchive;
+
+  /// No description provided for @archiveCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created: '**
+  String get archiveCreated;
+
+  /// No description provided for @archiveUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated: '**
+  String get archiveUpdated;
+
+  /// No description provided for @modeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Mode: '**
+  String get modeLabel;
 }
 
 class _AppLocalizationsDelegate
