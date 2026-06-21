@@ -158,5 +158,7 @@
     "seasonalScore": "Seasonal Wave",
     "seasonalWph": "WPH",
     "guildSubscription": "Guild Subscription",
-    "subscribe": "Subscribe"
+    "subscribe": "Subscribe",
+    "hellRanking": "Hell Ranking",
+    "damage": "Damage"
 }

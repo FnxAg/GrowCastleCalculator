@@ -434,4 +434,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subscribe => 'Subscribe';
+
+  @override
+  String get hellRanking => 'Hell Ranking';
+
+  @override
+  String get damage => 'Damage';
 }

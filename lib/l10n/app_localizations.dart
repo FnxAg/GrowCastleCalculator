@@ -931,6 +931,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Subscribe'**
   String get subscribe;
+
+  /// No description provided for @hellRanking.
+  ///
+  /// In en, this message translates to:
+  /// **'Hell Ranking'**
+  String get hellRanking;
+
+  /// No description provided for @damage.
+  ///
+  /// In en, this message translates to:
+  /// **'Damage'**
+  String get damage;
 }
 
 class _AppLocalizationsDelegate

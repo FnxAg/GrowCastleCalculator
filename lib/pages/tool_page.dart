@@ -3,6 +3,7 @@ import 'package:grow_castle_calculator/pages/tool_pages/wave_speed_query.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/player_info_query.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/player_ranking_page.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/guild_info_query.dart';
+import 'package:grow_castle_calculator/pages/tool_pages/hell_ranking_page.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/guild_subscription_page.dart';
 import 'package:provider/provider.dart';
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
@@ -107,6 +108,19 @@ class _ToolPageState extends State<ToolPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => const GuildInfoQueryPage(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.whatshot),
+              title: Text(AppLocalizations.of(context)!.hellRanking),
+              trailing: const Icon(Icons.keyboard_arrow_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const HellRankingPage(),
                   ),
                 );
               },

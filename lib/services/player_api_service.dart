@@ -44,6 +44,19 @@ class PlayerRankInfo {
   });
 }
 
+/// A player on the hell-mode leaderboard.
+class HellRankInfo {
+  final int rank;
+  final String name;
+  final int score;
+
+  const HellRankInfo({
+    required this.rank,
+    required this.name,
+    required this.score,
+  });
+}
+
 /// A member of a guild.
 class GuildMember {
   final String name;
@@ -103,6 +116,7 @@ class PlayerApiService {
   static const _s6 = '2C3A3E2C303170313028702F333E263A2D2C';
   static const _s7 = '2C3A3E2C30317031302870382A36333B2C';
   static const _s8 = '2C3A3E2C30317031302870382A36333B2C70';
+  static const _s9 = '2C3A3E2C30317031302870373A3333';
 
   // ── URL builders ──────────────────────────────────────────────────────
 
@@ -120,6 +134,10 @@ class PlayerApiService {
 
   static String _buildGuildDetailUrl(String guildName) {
     return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s8)}${Uri.encodeComponent(guildName)}';
+  }
+
+  static String _buildHellRankingUrl() {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s9)}';
   }
 
   // ── Public API ─────────────────────────────────────────────────────────
@@ -229,6 +247,60 @@ class PlayerApiService {
       for (final item in list) {
         if (item is! Map<String, dynamic>) continue;
         players.add(PlayerRankInfo(
+          rank: _parseInt(item['rank']),
+          name: (item['name'] as String?) ?? '',
+          score: _parseInt(item['score']),
+        ));
+      }
+
+      return players;
+    } on TimeoutException {
+      return const TimeoutError();
+    } on http.ClientException {
+      return const NetworkError('Network connection failed');
+    } catch (e) {
+      return NetworkError(e.toString());
+    }
+  }
+
+  /// Fetches the hell-mode leaderboard for the current season.
+  ///
+  /// Returns a list of [HellRankInfo] on success, or a [QueryError] on failure.
+  static Future<Object /* List<HellRankInfo> | QueryError */> queryHellRanking() async {
+    final uri = Uri.parse(_buildHellRankingUrl());
+
+    try {
+      final response = await http.get(uri).timeout(_timeout);
+      if (response.statusCode != 200) {
+        return NetworkError('HTTP ${response.statusCode}');
+      }
+
+      final rawBody = utf8.decode(response.bodyBytes);
+      final decoded = json.decode(rawBody);
+      if (decoded is! Map<String, dynamic>) {
+        return const NetworkError('Invalid response format');
+      }
+      final body = decoded;
+
+      final code = _parseInt(body['code']);
+      if (code != 200) {
+        return NetworkError('API code: $code');
+      }
+
+      final result = body['result'];
+      if (result is! Map<String, dynamic>) {
+        return const NetworkError('Missing result');
+      }
+
+      final list = result['list'];
+      if (list is! List<dynamic>) {
+        return const NetworkError('Missing player list');
+      }
+
+      final players = <HellRankInfo>[];
+      for (final item in list) {
+        if (item is! Map<String, dynamic>) continue;
+        players.add(HellRankInfo(
           rank: _parseInt(item['rank']),
           name: (item['name'] as String?) ?? '',
           score: _parseInt(item['score']),

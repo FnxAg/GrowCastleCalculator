@@ -431,4 +431,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get subscribe => '订阅';
+
+  @override
+  String get hellRanking => '无尽排名';
+
+  @override
+  String get damage => '伤害';
 }

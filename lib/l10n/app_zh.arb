@@ -158,5 +158,7 @@
     "seasonalScore": "赛季波",
     "seasonalWph": "WPH",
     "guildSubscription": "订阅公会信息",
-    "subscribe": "订阅"
+    "subscribe": "订阅",
+    "hellRanking": "无尽排名",
+    "damage": "伤害"
 }
