@@ -41,6 +41,7 @@ class PreferencesService {
   static const _keyWaveSpeedQueryData = 'wave_speed_query_data';
   static const _keyCalculatorArchives = 'calculator_archives';
   static const _keyGoldCalculatorArchives = 'gold_calculator_archives';
+  static const _keyGuildSubscriptionName = 'guild_subscription_name';
 
   /// Old per-field keys — kept for migration.
   static const _legacyCalculatorKeys = [
@@ -64,6 +65,7 @@ class PreferencesService {
     _keyWaveSpeedQueryData,
     _keyCalculatorArchives,
     _keyGoldCalculatorArchives,
+    _keyGuildSubscriptionName,
     ..._legacyCalculatorKeys,
     ..._legacyGoldCalculatorKeys,
   ];
@@ -252,6 +254,23 @@ class PreferencesService {
     await prefs.setString(_keyGoldCalculatorArchives, json.encode(list));
   }
 
+  // ── Guild subscription (simple string key) ─────────────────────────────
+
+  static Future<String?> loadGuildSubscriptionName() async {
+    final prefs = await _prefs;
+    return prefs.getString(_keyGuildSubscriptionName);
+  }
+
+  static Future<void> saveGuildSubscriptionName(String name) async {
+    final prefs = await _prefs;
+    await prefs.setString(_keyGuildSubscriptionName, name);
+  }
+
+  static Future<void> clearGuildSubscriptionName() async {
+    final prefs = await _prefs;
+    await prefs.remove(_keyGuildSubscriptionName);
+  }
+
   // ── Bulk operations ────────────────────────────────────────────────────
 
   /// Removes all app data (both old and new formats), but keeps locale/theme.
@@ -285,6 +304,10 @@ class PreferencesService {
     if (gcArchivesJson != null) {
       data[_keyGoldCalculatorArchives] = gcArchivesJson;
     }
+    final subName = prefs.getString(_keyGuildSubscriptionName);
+    if (subName != null) {
+      data[_keyGuildSubscriptionName] = subName;
+    }
 
     // Also export locale/theme for completeness.
     data[_keyLocaleChoice] = prefs.getInt(_keyLocaleChoice) ?? 0;
@@ -310,6 +333,10 @@ class PreferencesService {
     if (data[_keyGoldCalculatorArchives] is String) {
       await prefs.setString(
           _keyGoldCalculatorArchives, data[_keyGoldCalculatorArchives]);
+    }
+    if (data[_keyGuildSubscriptionName] is String) {
+      await prefs.setString(
+          _keyGuildSubscriptionName, data[_keyGuildSubscriptionName]);
     }
 
     // Locale / theme.

@@ -148,5 +148,15 @@
     "updateArchive": "更新当前存档",
     "archiveCreated": "创建日期：",
     "archiveUpdated": "最后更新：",
-    "modeLabel": "模式："
+    "modeLabel": "模式：",
+    "playerInfoQuery": "查询玩家信息",
+    "playerRanking": "玩家排名",
+    "guildInfoQuery": "公会排名",
+    "currentSeason": "当前赛季",
+    "rank": "排名",
+    "guildName": "公会名称",
+    "seasonalScore": "赛季波",
+    "seasonalWph": "赛季波速",
+    "guildSubscription": "订阅公会信息",
+    "subscribe": "订阅"
 }

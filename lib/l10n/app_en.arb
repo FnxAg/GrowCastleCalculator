@@ -148,5 +148,15 @@
     "updateArchive": "Update Current Archive",
     "archiveCreated": "Created: ",
     "archiveUpdated": "Updated: ",
-    "modeLabel": "Mode: "
+    "modeLabel": "Mode: ",
+    "playerInfoQuery": "Player Info Query",
+    "playerRanking": "Player Ranking",
+    "guildInfoQuery": "Guild Ranking",
+    "currentSeason": "Current Season",
+    "rank": "Rank",
+    "guildName": "Guild Name",
+    "seasonalScore": "Seasonal Score",
+    "seasonalWph": "Seasonal WPH",
+    "guildSubscription": "Guild Subscription",
+    "subscribe": "Subscribe"
 }

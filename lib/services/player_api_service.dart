@@ -18,6 +18,40 @@ class PlayerQueryResult {
   });
 }
 
+/// Result of a successful guild list query.
+class GuildInfo {
+  final int rank;
+  final String name;
+  final int score;
+
+  const GuildInfo({
+    required this.rank,
+    required this.name,
+    required this.score,
+  });
+}
+
+/// A player on the season leaderboard.
+class PlayerRankInfo {
+  final int rank;
+  final String name;
+  final int score;
+
+  const PlayerRankInfo({
+    required this.rank,
+    required this.name,
+    required this.score,
+  });
+}
+
+/// A member of a guild.
+class GuildMember {
+  final String name;
+  final int score;
+
+  const GuildMember({required this.name, required this.score});
+}
+
 /// Simple wrapper for API error cases.
 sealed class QueryError {
   const QueryError();
@@ -43,32 +77,64 @@ class TimeoutError extends QueryError {
 class PlayerApiService {
   PlayerApiService._();
 
-  static const Duration _timeout = Duration(seconds: 4);
+  static const Duration _timeout = Duration(seconds: 10);
 
-  // ── URL assembly (not plain text) ──────────────────────────────────────
+  // ── URL decoding ──────────────────────────────────────────────────────
 
-  static const List<String> __p = [
-    'https://',
-    'raongames',
-    '.com/',
-    'growcastle/',
-    'restapi/',
-    'season/now/',
-    'players/',
-  ];
+  static const _xk = 0x5F;
 
-  static String _buildUrl(String playerName) {
-    return '${__p[0]}${__p[1]}${__p[2]}${__p[3]}${__p[4]}${__p[5]}${__p[6]}${Uri.encodeComponent(playerName)}';
+  /// Decodes a hex string that was XOR-obfuscated with [_xk].
+  static String _d(String hex) {
+    final chars = <int>[];
+    for (int i = 0; i < hex.length; i += 2) {
+      chars.add(int.parse(hex.substring(i, i + 2), radix: 16) ^ _xk);
+    }
+    return String.fromCharCodes(chars);
+  }
+
+  // ── Obfuscated URL segments (XOR hex) ─────────────────────────────────
+
+  static const _s0 = '372B2B2F2C657070';
+  static const _s1 = '2D3E3031383E323A2C';
+  static const _s2 = '713C303270';
+  static const _s3 = '382D30283C3E2C2B333A70';
+  static const _s4 = '2D3A2C2B3E2F3670';
+  static const _s5 = '2C3A3E2C303170313028702F333E263A2D2C70';
+  static const _s6 = '2C3A3E2C303170313028702F333E263A2D2C';
+  static const _s7 = '2C3A3E2C30317031302870382A36333B2C';
+  static const _s8 = '2C3A3E2C30317031302870382A36333B2C70';
+
+  // ── URL builders ──────────────────────────────────────────────────────
+
+  static String _buildPlayerNowUrl(String playerName) {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s5)}${Uri.encodeComponent(playerName)}';
+  }
+
+  static String _buildGuildsUrl() {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s7)}';
+  }
+
+  static String _buildPlayerRankingUrl() {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}';
+  }
+
+  static String _buildGuildDetailUrl(String guildName) {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s8)}${Uri.encodeComponent(guildName)}';
   }
 
   // ── Public API ─────────────────────────────────────────────────────────
 
-  /// Fetches player info for [playerName].
+  /// Fetches player info for [playerName] from the current season.
   ///
   /// Returns a [PlayerQueryResult] on success, or a [QueryError] on failure.
   static Future<Object /* PlayerQueryResult | QueryError */> query(
       String playerName) async {
-    final url = _buildUrl(playerName.trim());
+    return _queryPlayer(_buildPlayerNowUrl(playerName.trim()));
+  }
+
+  /// Common player query logic shared by now/last season endpoints.
+  static Future<Object /* PlayerQueryResult | QueryError */> _queryPlayer(
+      String url) async {
     final uri = Uri.parse(url);
 
     try {
@@ -116,6 +182,174 @@ class PlayerApiService {
         queryDate: queryDate,
         rawResult: Map<String, dynamic>.from(result),
       );
+    } on TimeoutException {
+      return const TimeoutError();
+    } on http.ClientException {
+      return const NetworkError('Network connection failed');
+    } catch (e) {
+      return NetworkError(e.toString());
+    }
+  }
+
+  /// Fetches the player leaderboard for the current season.
+  ///
+  /// Returns a list of [PlayerRankInfo] on success, or a [QueryError] on failure.
+  static Future<Object /* List<PlayerRankInfo> | QueryError */> queryPlayerRanking() async {
+    final uri = Uri.parse(_buildPlayerRankingUrl());
+
+    try {
+      final response = await http.get(uri).timeout(_timeout);
+      if (response.statusCode != 200) {
+        return NetworkError('HTTP ${response.statusCode}');
+      }
+
+      final rawBody = utf8.decode(response.bodyBytes);
+      final decoded = json.decode(rawBody);
+      if (decoded is! Map<String, dynamic>) {
+        return const NetworkError('Invalid response format');
+      }
+      final body = decoded;
+
+      final code = _parseInt(body['code']);
+      if (code != 200) {
+        return NetworkError('API code: $code');
+      }
+
+      final result = body['result'];
+      if (result is! Map<String, dynamic>) {
+        return const NetworkError('Missing result');
+      }
+
+      final list = result['list'];
+      if (list is! List<dynamic>) {
+        return const NetworkError('Missing player list');
+      }
+
+      final players = <PlayerRankInfo>[];
+      for (final item in list) {
+        if (item is! Map<String, dynamic>) continue;
+        players.add(PlayerRankInfo(
+          rank: _parseInt(item['rank']),
+          name: (item['name'] as String?) ?? '',
+          score: _parseInt(item['score']),
+        ));
+      }
+
+      return players;
+    } on TimeoutException {
+      return const TimeoutError();
+    } on http.ClientException {
+      return const NetworkError('Network connection failed');
+    } catch (e) {
+      return NetworkError(e.toString());
+    }
+  }
+
+  /// Fetches the guild leaderboard for the current season.
+  ///
+  /// Returns a list of [GuildInfo] on success, or a [QueryError] on failure.
+  static Future<Object /* List<GuildInfo> | QueryError */> queryGuilds() async {
+    final uri = Uri.parse(_buildGuildsUrl());
+
+    try {
+      final response = await http.get(uri).timeout(_timeout);
+      if (response.statusCode != 200) {
+        return NetworkError('HTTP ${response.statusCode}');
+      }
+
+      final rawBody = utf8.decode(response.bodyBytes);
+      final decoded = json.decode(rawBody);
+      if (decoded is! Map<String, dynamic>) {
+        return const NetworkError('Invalid response format');
+      }
+      final body = decoded;
+
+      final code = _parseInt(body['code']);
+      if (code != 200) {
+        return NetworkError('API code: $code');
+      }
+
+      final result = body['result'];
+      if (result is! Map<String, dynamic>) {
+        return const NetworkError('Missing result');
+      }
+
+      final list = result['list'];
+      if (list is! List<dynamic>) {
+        return const NetworkError('Missing guild list');
+      }
+
+      final guilds = <GuildInfo>[];
+      for (final item in list) {
+        if (item is! Map<String, dynamic>) continue;
+        guilds.add(GuildInfo(
+          rank: _parseInt(item['rank']),
+          name: (item['name'] as String?) ?? '',
+          score: _parseInt(item['score']),
+        ));
+      }
+
+      return guilds;
+    } on TimeoutException {
+      return const TimeoutError();
+    } on http.ClientException {
+      return const NetworkError('Network connection failed');
+    } catch (e) {
+      return NetworkError(e.toString());
+    }
+  }
+
+  /// Fetches the member list for a specific guild.
+  ///
+  /// Returns a list of [GuildMember] sorted by score descending,
+  /// or a [QueryError] on failure. Members with null names are excluded.
+  static Future<Object /* List<GuildMember> | QueryError */> queryGuildDetail(
+      String guildName) async {
+    final uri = Uri.parse(_buildGuildDetailUrl(guildName.trim()));
+
+    try {
+      final response = await http.get(uri).timeout(_timeout);
+      if (response.statusCode != 200) {
+        return NetworkError('HTTP ${response.statusCode}');
+      }
+
+      final rawBody = utf8.decode(response.bodyBytes);
+      final decoded = json.decode(rawBody);
+      if (decoded is! Map<String, dynamic>) {
+        return const NetworkError('Invalid response format');
+      }
+      final body = decoded;
+
+      final code = _parseInt(body['code']);
+      if (code != 200) {
+        return NetworkError('API code: $code');
+      }
+
+      final result = body['result'];
+      if (result is! Map<String, dynamic>) {
+        return const NetworkError('Missing result');
+      }
+
+      final list = result['list'];
+      if (list is! List<dynamic>) {
+        return const NetworkError('Missing member list');
+      }
+
+      final members = <GuildMember>[];
+      for (final item in list) {
+        if (item is! Map<String, dynamic>) continue;
+        final name = item['name'];
+        if (name == null) continue; // skip null names
+        members.add(GuildMember(
+          name: name.toString(),
+          score: _parseInt(item['score']),
+        ));
+      }
+
+      // Sort by score descending.
+      members.sort((a, b) => b.score.compareTo(a.score));
+
+      return members;
     } on TimeoutException {
       return const TimeoutError();
     } on http.ClientException {

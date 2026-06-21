@@ -26,7 +26,8 @@ class UpdateChecker {
   static Future<UpdateInfo?> checkForUpdate() async {
     final localVersion = await getAppVersion();
     try {
-      final response = await http.get(Uri.parse(_githubApiUrl));
+      final response = await http.get(Uri.parse(_githubApiUrl))
+          .timeout(const Duration(seconds: 10));
       if (response.statusCode != 200) return null;
 
       final releaseData = json.decode(response.body);

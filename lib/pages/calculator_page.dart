@@ -55,6 +55,7 @@ class _CalculatorPageState extends State<CalculatorPage>
 
   DateTime _now = DateTime.now();
   late Timer _timer;
+  Timer? _autoRefreshTimer;
 
   // ── Player query state ──────────────────────────────────────────────────
   bool _isOnlineQuery = true;
@@ -112,6 +113,7 @@ class _CalculatorPageState extends State<CalculatorPage>
     }
     _gameNameController.dispose();
     _timer.cancel();
+    _autoRefreshTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -124,8 +126,10 @@ class _CalculatorPageState extends State<CalculatorPage>
         state == AppLifecycleState.inactive) {
       FocusScope.of(context).unfocus();
       _saveData();
+      _autoRefreshTimer?.cancel();
     } else if (state == AppLifecycleState.resumed) {
       _saveData();
+      if (_shouldAutoRefresh) _startAutoRefresh();
     }
   }
 
@@ -154,6 +158,9 @@ class _CalculatorPageState extends State<CalculatorPage>
     if (savedCols != null && savedCols.length == 4) {
       _visibleColumns = savedCols.map((e) => e == 'true').toList();
     }
+
+    // Resume auto-refresh if applicable.
+    if (_shouldAutoRefresh) _startAutoRefresh();
   }
 
   static List<T> _padList<T>(List<T> list, T fillValue, int minLength) {
@@ -194,17 +201,21 @@ class _CalculatorPageState extends State<CalculatorPage>
 
   void _clearFormData() {
     setState(() {
-      for (final c in _waveValueControllers) {
-        c.clear();
-      }
-      for (final c in _targetNameControllers) {
-        c.clear();
-      }
-      for (final c in _targetLevelControllers) {
-        c.clear();
-      }
+      // Reset state to defaults.
+      _dynamicFormNum = 7;
+      CalculatorPage.waveValue = [1000000, 40000];
+      _targetName = List.filled(_maxFormLimit - _defaultFormCount, '');
+      _targetLevel = List.filled(_maxFormLimit, 10000);
+      _targetCheckbox = List.filled(_maxFormLimit, true);
+      _isOnlineQuery = true;
+
+      // Sync controllers to reflect the reset state.
+      _syncControllers();
       _gameNameController.clear();
+
+      // Reset query state.
       _hasQueryResult = false;
+      _stopAutoRefresh();
       _queriedWave = 0;
       _queriedScore = 0;
       _lastQueryDate = null;
@@ -397,10 +408,13 @@ class _CalculatorPageState extends State<CalculatorPage>
     switch (result) {
       case PlayerQueryResult(:final wave, :final seasonalScore,
             :final queryDate):
-        _lastQueryDate = queryDate;
+        _lastQueryDate = _formatQueryDate(queryDate);
         _queriedWave = wave;
         _queriedScore = seasonalScore;
         _hasQueryResult = true;
+
+        // Start auto-refresh.
+        _startAutoRefresh();
 
         // Update wave values.
         CalculatorPage.waveValue[0] = wave;
@@ -434,6 +448,33 @@ class _CalculatorPageState extends State<CalculatorPage>
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  // ── Auto-refresh ────────────────────────────────────────────────────────
+
+  bool get _shouldAutoRefresh =>
+      _isOnlineQuery && _hasQueryResult && _gameNameController.text.trim().isNotEmpty;
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+    _autoRefreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+      _queryPlayer();
+    });
+  }
+
+  void _stopAutoRefresh() {
+    _autoRefreshTimer?.cancel();
+  }
+
+  /// Parses an ISO 8601 UTC timestamp string and formats it as local time.
+  String _formatQueryDate(String raw) {
+    if (raw.isEmpty) return raw;
+    try {
+      final dt = DateTime.parse(raw).toLocal();
+      return DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
+    } catch (_) {
+      return raw;
+    }
   }
 
   // ── Column visibility ──────────────────────────────────────────────────
@@ -597,7 +638,10 @@ class _CalculatorPageState extends State<CalculatorPage>
                 case 'mode_online':
                   setState(() => _isOnlineQuery = true);
                 case 'mode_free':
-                  setState(() => _isOnlineQuery = false);
+                  setState(() {
+                    _isOnlineQuery = false;
+                    _stopAutoRefresh();
+                  });
               }
             },
             itemBuilder: (context) => [
@@ -804,7 +848,7 @@ class _CalculatorPageState extends State<CalculatorPage>
                                 ),
                                 if (_lastQueryDate != null)
                                   Text(
-                                    '$_lastQueryDate UTC',
+                                    _lastQueryDate!,
                                     style: theme
                                         .textTheme.labelSmall
                                         ?.copyWith(

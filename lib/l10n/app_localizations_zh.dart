@@ -401,4 +401,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get modeLabel => '模式：';
+
+  @override
+  String get playerInfoQuery => '查询玩家信息';
+
+  @override
+  String get playerRanking => '玩家排名';
+
+  @override
+  String get guildInfoQuery => '公会排名';
+
+  @override
+  String get currentSeason => '当前赛季';
+
+  @override
+  String get rank => '排名';
+
+  @override
+  String get guildName => '公会名称';
+
+  @override
+  String get seasonalScore => '赛季波';
+
+  @override
+  String get seasonalWph => '赛季波速';
+
+  @override
+  String get guildSubscription => '订阅公会信息';
+
+  @override
+  String get subscribe => '订阅';
 }

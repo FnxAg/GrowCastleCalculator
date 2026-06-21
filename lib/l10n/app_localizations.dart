@@ -871,6 +871,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mode: '**
   String get modeLabel;
+
+  /// No description provided for @playerInfoQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Player Info Query'**
+  String get playerInfoQuery;
+
+  /// No description provided for @playerRanking.
+  ///
+  /// In en, this message translates to:
+  /// **'Player Ranking'**
+  String get playerRanking;
+
+  /// No description provided for @guildInfoQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Guild Ranking'**
+  String get guildInfoQuery;
+
+  /// No description provided for @currentSeason.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Season'**
+  String get currentSeason;
+
+  /// No description provided for @rank.
+  ///
+  /// In en, this message translates to:
+  /// **'Rank'**
+  String get rank;
+
+  /// No description provided for @guildName.
+  ///
+  /// In en, this message translates to:
+  /// **'Guild Name'**
+  String get guildName;
+
+  /// No description provided for @seasonalScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasonal Score'**
+  String get seasonalScore;
+
+  /// No description provided for @seasonalWph.
+  ///
+  /// In en, this message translates to:
+  /// **'Seasonal WPH'**
+  String get seasonalWph;
+
+  /// No description provided for @guildSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Guild Subscription'**
+  String get guildSubscription;
+
+  /// No description provided for @subscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get subscribe;
 }
 
 class _AppLocalizationsDelegate

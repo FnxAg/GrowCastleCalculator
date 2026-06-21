@@ -404,4 +404,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get modeLabel => 'Mode: ';
+
+  @override
+  String get playerInfoQuery => 'Player Info Query';
+
+  @override
+  String get playerRanking => 'Player Ranking';
+
+  @override
+  String get guildInfoQuery => 'Guild Ranking';
+
+  @override
+  String get currentSeason => 'Current Season';
+
+  @override
+  String get rank => 'Rank';
+
+  @override
+  String get guildName => 'Guild Name';
+
+  @override
+  String get seasonalScore => 'Seasonal Score';
+
+  @override
+  String get seasonalWph => 'Seasonal WPH';
+
+  @override
+  String get guildSubscription => 'Guild Subscription';
+
+  @override
+  String get subscribe => 'Subscribe';
 }
