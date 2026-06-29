@@ -20,7 +20,7 @@ class _HellRankingPageState extends State<HellRankingPage>
   Timer? _fetchTimer;
   final ScrollController _scrollController = ScrollController();
 
-  static const _cardHeight = 48.0;
+  static const _cardHeight = 44.0;
 
   static const List<int> _jumpRanks = [1, 10, 50, 100, 200, 300];
 
@@ -166,7 +166,7 @@ class _HellRankingPageState extends State<HellRankingPage>
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                    padding: const EdgeInsets.only(top: 8, bottom: 4),
                     child: _buildHeaderCard(theme, loc),
                   ),
                 ),
@@ -184,49 +184,48 @@ class _HellRankingPageState extends State<HellRankingPage>
   }
 
   Widget _buildHeaderCard(ThemeData theme, AppLocalizations loc) {
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.primaryContainer.withAlpha(120),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 48,
-              child: Text(
-                loc.rank,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                loc.gameName,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 152,
-              child: Text(
-                loc.damage,
-                textAlign: TextAlign.end,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
+        border: Border(
+          bottom: BorderSide(color: theme.dividerColor.withAlpha(100)),
         ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 36,
+            child: Text(
+              loc.rank,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              loc.gameName,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 152,
+            child: Text(
+              loc.damage,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -236,18 +235,10 @@ class _HellRankingPageState extends State<HellRankingPage>
     final player = _players[index];
     final damage = _formatComma(player.score);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(
-            color: theme.colorScheme.outlineVariant.withAlpha(80),
-          ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
           onTap: () {
             Navigator.push(
               context,
@@ -257,11 +248,11 @@ class _HellRankingPageState extends State<HellRankingPage>
             );
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 SizedBox(
-                  width: 48,
+                  width: 36,
                   child: Text(
                     player.rank.toString(),
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -275,29 +266,37 @@ class _HellRankingPageState extends State<HellRankingPage>
                 Expanded(
                   child: Text(
                     player.name,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 152,
-                child: Text(
-                  damage,
-                  textAlign: TextAlign.end,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w600,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 152,
+                  child: Text(
+                    damage,
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      ),
+        Divider(
+          height: 0,
+          thickness: 0.5,
+          indent: 16,
+          endIndent: 16,
+          color: theme.dividerColor.withAlpha(80),
+        ),
+      ],
     );
   }
 }

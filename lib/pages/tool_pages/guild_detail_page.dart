@@ -129,7 +129,7 @@ class _GuildDetailPageState extends State<GuildDetailPage> {
                   slivers: [
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                        padding: const EdgeInsets.only(top: 8, bottom: 4),
                         child: _buildHeaderCard(theme, loc),
                       ),
                     ),
@@ -148,73 +148,72 @@ class _GuildDetailPageState extends State<GuildDetailPage> {
   }
 
   Widget _buildHeaderCard(ThemeData theme, AppLocalizations loc) {
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.primaryContainer.withAlpha(120),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 48,
-              child: Text(
-                loc.rank,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                loc.gameName,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 72,
-              child: Text(
-                loc.seasonalScore,
-                textAlign: TextAlign.end,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 48,
-              child: Text(
-                'WPH',
-                textAlign: TextAlign.end,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 52,
-              child: Text(
-                'Online',
-                textAlign: TextAlign.end,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
+        border: Border(
+          bottom: BorderSide(color: theme.dividerColor.withAlpha(100)),
         ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 36,
+            child: Text(
+              loc.rank,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              loc.gameName,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 64,
+            child: Text(
+              loc.seasonalScore,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 44,
+            child: Text(
+              'WPH',
+              textAlign: TextAlign.end,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 48,
+            child: Text(
+              'Online',
+              textAlign: TextAlign.end,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -230,18 +229,10 @@ class _GuildDetailPageState extends State<GuildDetailPage> {
         : '—';
     final online = _lastOnline[member.name] ?? '';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(
-            color: theme.colorScheme.outlineVariant.withAlpha(80),
-          ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
           onTap: () {
             Navigator.push(
               context,
@@ -252,67 +243,75 @@ class _GuildDetailPageState extends State<GuildDetailPage> {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 SizedBox(
-                  width: 48,
+                  width: 36,
                   child: Text(
                     rank.toString(),
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: rank <= 3
-                        ? theme.colorScheme.primary
-                        : null,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: rank <= 3
+                          ? theme.colorScheme.primary
+                          : null,
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Text(
-                  member.name,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 72,
-                child: Text(
-                  member.score.toString(),
-                  textAlign: TextAlign.end,
-                  style: theme.textTheme.bodyMedium,
-                ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 48,
-                child: Text(
-                  wph,
-                  textAlign: TextAlign.end,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    member.name,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              SizedBox(
-                width: 52,
-                child: Text(
-                  online,
-                  textAlign: TextAlign.end,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 64,
+                  child: Text(
+                    member.score.toString(),
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.bodyMedium,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 44,
+                  child: Text(
+                    wph,
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                SizedBox(
+                  width: 48,
+                  child: Text(
+                    online,
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      ),
-      ),
+        Divider(
+          height: 0,
+          thickness: 0.5,
+          indent: 16,
+          endIndent: 16,
+          color: theme.dividerColor.withAlpha(80),
+        ),
+      ],
     );
   }
 }

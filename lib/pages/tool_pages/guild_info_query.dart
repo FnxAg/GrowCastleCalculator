@@ -135,7 +135,7 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
                       // ── Header row ────────────────────────────────────
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                          padding: const EdgeInsets.only(top: 8, bottom: 4),
                           child: _buildHeaderCard(theme, loc, progress),
                         ),
                       ),
@@ -160,61 +160,60 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
 
   Widget _buildHeaderCard(
       ThemeData theme, AppLocalizations loc, SeasonProgress progress) {
-    return Card(
-      elevation: 0,
-      color: theme.colorScheme.primaryContainer.withAlpha(120),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 48,
-              child: Text(
-                loc.rank,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Expanded(
-              child: Text(
-                loc.guildName,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 80,
-              child: Text(
-                loc.seasonalScore,
-                textAlign: TextAlign.end,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 56,
-              child: Text(
-                'WPH',
-                textAlign: TextAlign.end,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withAlpha(80),
+        border: Border(
+          bottom: BorderSide(color: theme.dividerColor.withAlpha(100)),
         ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 36,
+            child: Text(
+              loc.rank,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              loc.guildName,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 72,
+            child: Text(
+              loc.seasonalScore,
+              textAlign: TextAlign.end,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          SizedBox(
+            width: 44,
+            child: Text(
+              'WPH',
+              textAlign: TextAlign.end,
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -228,18 +227,10 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
             .toStringAsFixed(0)
         : '—';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: BorderSide(
-            color: theme.colorScheme.outlineVariant.withAlpha(80),
-          ),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
           onTap: () {
             Navigator.push(
               context,
@@ -249,11 +240,11 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
             );
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 SizedBox(
-                  width: 48,
+                  width: 36,
                   child: Text(
                     guild.rank.toString(),
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -271,20 +262,21 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
                       fontWeight: FontWeight.w600,
                     ),
                     overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 SizedBox(
-                  width: 80,
+                  width: 72,
                   child: Text(
                     guild.score.toString(),
                     textAlign: TextAlign.end,
                     style: theme.textTheme.bodyMedium,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 4),
                 SizedBox(
-                  width: 56,
+                  width: 44,
                   child: Text(
                     wph,
                     textAlign: TextAlign.end,
@@ -298,7 +290,14 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
             ),
           ),
         ),
-      ),
+        Divider(
+          height: 0,
+          thickness: 0.5,
+          indent: 16,
+          endIndent: 16,
+          color: theme.dividerColor.withAlpha(80),
+        ),
+      ],
     );
   }
 }
