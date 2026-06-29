@@ -9,7 +9,7 @@ import 'package:grow_castle_calculator/enums/locale_option.dart';
 import 'package:grow_castle_calculator/enums/theme_option.dart';
 import 'package:grow_castle_calculator/models/update_info.dart';
 import 'package:grow_castle_calculator/providers/theme_provider.dart';
-import 'package:grow_castle_calculator/services/data_export_service.dart';
+// import 'package:grow_castle_calculator/services/data_export_service.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:grow_castle_calculator/services/update_checker.dart';
 
@@ -118,18 +118,18 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           // ── Export / Import ───────────────────────────────────────────
-          ListTile(
-            leading: const Icon(Icons.file_upload),
-            title: Text(loc.exportData),
-            trailing: const Icon(Icons.keyboard_arrow_right),
-            onTap: () => DataExportService.exportData(context),
-          ),
-          ListTile(
-            leading: const Icon(Icons.file_download),
-            title: Text(loc.importData),
-            trailing: const Icon(Icons.keyboard_arrow_right),
-            onTap: () => DataExportService.importData(context),
-          ),
+          // ListTile(
+          //   leading: const Icon(Icons.file_upload),
+          //   title: Text(loc.exportData),
+          //   trailing: const Icon(Icons.keyboard_arrow_right),
+          //   onTap: () => DataExportService.exportData(context),
+          // ),
+          // ListTile(
+          //   leading: const Icon(Icons.file_download),
+          //   title: Text(loc.importData),
+          //   trailing: const Icon(Icons.keyboard_arrow_right),
+          //   onTap: () => DataExportService.importData(context),
+          // ),
 
           // ── Check for updates ─────────────────────────────────────────
           ListTile(

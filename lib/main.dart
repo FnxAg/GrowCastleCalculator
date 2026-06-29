@@ -5,10 +5,15 @@ import 'package:grow_castle_calculator/app.dart';
 import 'package:grow_castle_calculator/providers/gold_calculator_provider.dart';
 import 'package:grow_castle_calculator/providers/theme_provider.dart';
 import 'package:grow_castle_calculator/providers/wave_speed_query_provider.dart';
+import 'package:grow_castle_calculator/services/database_service.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize the SQLite database and migrate any existing
+  // SharedPreferences data on first launch.
+  await DatabaseService.ensureInitialized();
 
   // Initialize shared mutable state from persisted preferences.
   localeChoice = await PreferencesService.getLocaleChoice();

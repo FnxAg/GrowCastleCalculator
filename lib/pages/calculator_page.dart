@@ -9,7 +9,6 @@ import 'package:grow_castle_calculator/models/calculator_data.dart';
 import 'package:grow_castle_calculator/pages/history_archives_page.dart';
 import 'package:grow_castle_calculator/services/player_api_service.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
 import 'package:grow_castle_calculator/utils/number_utils.dart';
 import 'package:grow_castle_calculator/widgets/season_progress_dialog.dart';
@@ -153,10 +152,9 @@ class _CalculatorPageState extends State<CalculatorPage>
       _syncControllers();
     });
     // Load column visibility (UI preference, not in CalculatorData).
-    final prefs = await SharedPreferences.getInstance();
-    final savedCols = prefs.getStringList('calc_visible_columns');
-    if (savedCols != null && savedCols.length == 4) {
-      _visibleColumns = savedCols.map((e) => e == 'true').toList();
+    final savedCols = await PreferencesService.loadColumnVisibility();
+    if (savedCols.length == 4) {
+      _visibleColumns = savedCols;
     }
 
     // Resume auto-refresh if applicable.
@@ -480,11 +478,7 @@ class _CalculatorPageState extends State<CalculatorPage>
   // ── Column visibility ──────────────────────────────────────────────────
 
   Future<void> _saveColumnVisibility() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      'calc_visible_columns',
-      _visibleColumns.map((e) => e.toString()).toList(),
-    );
+    await PreferencesService.saveColumnVisibility(_visibleColumns);
   }
 
   void _showDisplaySettingsDialog() {
