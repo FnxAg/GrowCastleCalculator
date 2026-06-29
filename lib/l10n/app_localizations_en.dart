@@ -202,7 +202,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get version => 'Version';
 
   @override
-  String get developer => 'by FnxAg aka Ariyara\n🐾Welcome to POC!🐾';
+  String get developer =>
+      'by FnxAg aka Ariyara\n🐾Welcome to POC!🐾\nE-mail: 2303499521@qq.com';
 
   @override
   String appVersion(String versionNumber) {

@@ -479,7 +479,7 @@ abstract class AppLocalizations {
   /// No description provided for @developer.
   ///
   /// In en, this message translates to:
-  /// **'by FnxAg aka Ariyara\n🐾Welcome to POC!🐾'**
+  /// **'by FnxAg aka Ariyara\n🐾Welcome to POC!🐾\nE-mail: 2303499521@qq.com'**
   String get developer;
 
   /// No description provided for @appVersion.

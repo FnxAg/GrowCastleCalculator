@@ -42,6 +42,8 @@ class PreferencesService {
   static const _keyCalculatorArchives = 'calculator_archives';
   static const _keyGoldCalculatorArchives = 'gold_calculator_archives';
   static const _keyGuildSubscriptionName = 'guild_subscription_name';
+  static const _keySeasonApiUrl = 'season_api_url';
+  static const _keyPlayerName = 'player_name';
 
   /// Old per-field keys — kept for migration.
   static const _legacyCalculatorKeys = [
@@ -66,6 +68,8 @@ class PreferencesService {
     _keyCalculatorArchives,
     _keyGoldCalculatorArchives,
     _keyGuildSubscriptionName,
+    _keySeasonApiUrl,
+    _keyPlayerName,
     ..._legacyCalculatorKeys,
     ..._legacyGoldCalculatorKeys,
   ];
@@ -269,6 +273,26 @@ class PreferencesService {
   static Future<void> clearGuildSubscriptionName() async {
     final prefs = await _prefs;
     await prefs.remove(_keyGuildSubscriptionName);
+  }
+
+  static Future<String?> loadSeasonApiUrl() async {
+    final prefs = await _prefs;
+    return prefs.getString(_keySeasonApiUrl);
+  }
+
+  static Future<void> saveSeasonApiUrl(String url) async {
+    final prefs = await _prefs;
+    await prefs.setString(_keySeasonApiUrl, url);
+  }
+
+  static Future<String?> loadPlayerName() async {
+    final prefs = await _prefs;
+    return prefs.getString(_keyPlayerName);
+  }
+
+  static Future<void> savePlayerName(String name) async {
+    final prefs = await _prefs;
+    await prefs.setString(_keyPlayerName, name);
   }
 
   // ── Bulk operations ────────────────────────────────────────────────────

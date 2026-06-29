@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/services/player_api_service.dart';
+import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
 
 class PlayerInfoQueryPage extends StatefulWidget {
@@ -30,9 +33,15 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage>
   String? _queryDate;
   String _rawQueryDate = '';
 
+  // Season history state.
+  String? _apiUrl;
+  bool _isQueryingSeason = false;
+  Map<String, List<int?>>? _seasonData;
+  int _seasonWphCount = 0;
+  String? _seasonError;
+
   DateTime _now = DateTime.now();
   late Timer _timer;
-  Timer? _autoRefreshTimer;
 
   @override
   void initState() {
@@ -44,7 +53,10 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage>
     if (widget.initialName != null && widget.initialName!.isNotEmpty) {
       _gameNameController.text = widget.initialName!;
       WidgetsBinding.instance.addPostFrameCallback((_) => _queryPlayer());
+    } else {
+      _loadPlayerName();
     }
+    _loadApiUrl();
   }
 
   @override
@@ -52,26 +64,7 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage>
     WidgetsBinding.instance.removeObserver(this);
     _gameNameController.dispose();
     _timer.cancel();
-    _autoRefreshTimer?.cancel();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.detached ||
-        state == AppLifecycleState.inactive) {
-      _autoRefreshTimer?.cancel();
-    } else if (state == AppLifecycleState.resumed && _hasResult) {
-      _startAutoRefresh();
-    }
-  }
-
-  void _startAutoRefresh() {
-    _autoRefreshTimer?.cancel();
-    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      _queryPlayer();
-    });
   }
 
   Future<void> _queryPlayer() async {
@@ -104,7 +97,10 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage>
           _rawQueryDate = queryDate;
           _queryDate = _formatQueryDate(queryDate);
           _hasResult = true;
-          _startAutoRefresh();
+          PreferencesService.savePlayerName(name);
+          if (_apiUrl != null) {
+            _querySeasonHistory();
+          }
         default:
           _hasResult = false;
           _showToast(loc.nameNotFound);
@@ -156,6 +152,14 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage>
             elevation: 1,
             backgroundColor: theme.scaffoldBackgroundColor,
             actions: [
+              IconButton(
+                icon: Icon(Icons.link),
+                color: _apiUrl != null
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant.withAlpha(100),
+                tooltip: 'API URL',
+                onPressed: _showUrlDialog,
+              ),
               if (_isQuerying)
                 const Padding(
                   padding: EdgeInsets.only(right: 12),
@@ -310,6 +314,14 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage>
                   ),
                 ),
               ),
+              // ── Season history result ─────────────────────────────
+              if (_isQueryingSeason || _seasonData != null || _seasonError != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+                    child: _buildSeasonHistoryCard(theme),
+                  ),
+                ),
               const SliverToBoxAdapter(child: SizedBox(height: 80)),
             ],
           ),
@@ -337,6 +349,362 @@ class _PlayerInfoQueryPageState extends State<PlayerInfoQueryPage>
           ),
         ],
       ),
+    );
+  }
+
+  // ── Season API URL ──────────────────────────────────────────────────────
+
+  Future<void> _loadApiUrl() async {
+    final url = await PreferencesService.loadSeasonApiUrl();
+    if (mounted) setState(() => _apiUrl = url);
+  }
+
+  Future<void> _loadPlayerName() async {
+    final name = await PreferencesService.loadPlayerName();
+    if (mounted && name != null && name.isNotEmpty) {
+      _gameNameController.text = name;
+    }
+  }
+
+  void _showUrlDialog() {
+    final controller = TextEditingController(text: _apiUrl ?? '');
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('API URL'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'https://example.com/api',
+            border: OutlineInputBorder(),
+            isDense: true,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _showInstructionsDialog();
+            },
+            child: const Text('说明'),
+          ),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextButton(
+                onPressed: () {
+                  controller.dispose();
+                  Navigator.pop(ctx);
+                },
+                child: Text(AppLocalizations.of(context)!.cancel),
+              ),
+              const SizedBox(width: 4),
+              TextButton(
+                onPressed: () {
+                  final url = controller.text.trim();
+                  controller.dispose();
+                  if (url.isNotEmpty) {
+                    PreferencesService.saveSeasonApiUrl(url);
+                    setState(() => _apiUrl = url);
+                  }
+                  Navigator.pop(ctx);
+                },
+                child: Text(AppLocalizations.of(context)!.confirm),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showInstructionsDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('说明'),
+        content: const Text(
+          '从API返回的JSON数据中，必须包含以下字段：\n'
+          '- season: 赛季名称\n'
+          '- wph: 每小时波数\n'
+          '示例JSON:\n'
+          '[\n'
+          '  {"season": "Season 1", "wph": 120},\n'
+          '  {"season": "Season 2", "wph": 150},\n'
+          '  {"season": "Season 3", "wph": null}\n'
+          ']\n'
+          '如需API，可联系作者或自行搭建。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(AppLocalizations.of(context)!.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Season history query ────────────────────────────────────────────────
+
+  Future<void> _querySeasonHistory() async {
+    final playerName = _gameNameController.text.trim();
+    if (playerName.isEmpty) {
+      _showToast('请先输入玩家名称');
+      return;
+    }
+
+    setState(() {
+      _isQueryingSeason = true;
+      _seasonData = null;
+      _seasonError = null;
+      _seasonWphCount = 0;
+    });
+
+    // Strip trailing slash(es) from base URL, then build path.
+    final base = _apiUrl!.replaceAll(RegExp(r'/+$'), '');
+    final encodedName = Uri.encodeComponent(playerName);
+    final url = '$base/season/all/players/$encodedName';
+
+    final client = http.Client();
+    try {
+      final uri = Uri.parse(url);
+      final request = http.Request('GET', uri);
+      request.headers['Accept'] = 'application/json';
+      request.headers['User-Agent'] = 'curl/8.0';
+      final streamedResp =
+          await client.send(request).timeout(const Duration(seconds: 10));
+      final response = await http.Response.fromStream(streamedResp);
+
+      if (response.statusCode != 200) {
+        setState(() {
+          _isQueryingSeason = false;
+          _seasonError = 'HTTP ${response.statusCode}: '
+              '${response.reasonPhrase ?? "Unknown"}';
+        });
+        return;
+      }
+
+      final dynamic decoded;
+      try {
+        decoded = json.decode(utf8.decode(response.bodyBytes));
+      } catch (e) {
+        setState(() {
+          _isQueryingSeason = false;
+          _seasonError = 'JSON解析错误: $e';
+        });
+        return;
+      }
+
+      if (decoded is! List) {
+        setState(() {
+          _isQueryingSeason = false;
+          _seasonError = 'JSON格式错误: 期望数组，实际为 ${decoded.runtimeType}';
+        });
+        return;
+      }
+
+      // Group by season, preserving insertion order.
+      final grouped = <String, List<int?>>{};
+      int count = 0;
+      for (final entry in decoded) {
+        if (entry is! Map<String, dynamic>) continue;
+        final season = entry['season']?.toString();
+        if (season == null || season.isEmpty) continue;
+        final wphRaw = entry['wph'];
+        final wph = wphRaw is num ? wphRaw.toInt() : null;
+        grouped.putIfAbsent(season, () => []).add(wph);
+        if (wphRaw is num) count++;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _isQueryingSeason = false;
+        _seasonData = grouped;
+        _seasonWphCount = count;
+        _seasonError = null;
+      });
+    } on TimeoutException {
+      if (!mounted) return;
+      setState(() {
+        _isQueryingSeason = false;
+        _seasonError = '请求超时\nURL: $url';
+      });
+    } on http.ClientException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isQueryingSeason = false;
+        _seasonError = '网络请求失败: ${e.message}\nURL: $url';
+      });
+    } on FormatException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isQueryingSeason = false;
+        _seasonError = 'URL格式错误: ${e.message}';
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isQueryingSeason = false;
+        _seasonError = '请求错误: $e\nURL: $url';
+      });
+    } finally {
+      client.close();
+    }
+  }
+
+  // ── Season history display ──────────────────────────────────────────────
+
+  Widget _buildSeasonHistoryCard(ThemeData theme) {
+    if (_seasonError != null) {
+      return Card(
+        elevation: 0,
+        color: theme.colorScheme.errorContainer.withAlpha(80),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline,
+                  color: theme.colorScheme.error, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _seasonError!,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_seasonData == null) {
+      // Still loading or no data yet.
+      if (_isQueryingSeason) {
+        return Card(
+          elevation: 0,
+          color: theme.colorScheme.surfaceContainerHighest,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+        );
+      }
+      return const SizedBox.shrink();
+    }
+
+    return Card(
+      elevation: 0,
+      color: theme.colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header: count
+            Text(
+              '共 $_seasonWphCount 条记录',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const Divider(height: 1),
+            // Body: grouped by season
+            ...(_seasonData!.entries.map((e) => Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Season: ${e.key}',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      _buildWphGrid(e.value, theme),
+                    ],
+                  ),
+                ))),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds a grid of WPH chips: 5 per row, neatly aligned.
+  Widget _buildWphGrid(List<int?> wphs, ThemeData theme) {
+    const itemsPerRow = 5;
+    final rows = <List<int?>>[];
+    for (int i = 0; i < wphs.length; i += itemsPerRow) {
+      final end =
+          (i + itemsPerRow < wphs.length) ? i + itemsPerRow : wphs.length;
+      rows.add(wphs.sublist(i, end));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: rows.map((row) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            children: List.generate(itemsPerRow, (i) {
+              final wph = i < row.length ? row[i] : null;
+              final isNull = wph == null;
+              final cell = Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
+                decoration: BoxDecoration(
+                  color: isNull
+                      ? theme.colorScheme.surfaceContainerHighest
+                      : theme.colorScheme.primaryContainer.withAlpha(80),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isNull
+                        ? theme.colorScheme.outlineVariant.withAlpha(50)
+                        : theme.colorScheme.primary.withAlpha(60),
+                    width: 0.5,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  isNull ? '—' : wph.toString(),
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isNull
+                        ? theme.colorScheme.onSurfaceVariant.withAlpha(120)
+                        : theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              );
+
+              if (i < itemsPerRow - 1) {
+                return Expanded(child: Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: cell,
+                ));
+              }
+              return Expanded(child: cell);
+            }),
+          ),
+        );
+      }).toList(),
     );
   }
 }
