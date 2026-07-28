@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/player_info_query.dart';
 import 'package:grow_castle_calculator/services/player_api_service.dart';
+import 'package:grow_castle_calculator/utils/page_transitions.dart';
 
 class HellRankingPage extends StatefulWidget {
   const HellRankingPage({super.key});
@@ -242,7 +243,7 @@ class _HellRankingPageState extends State<HellRankingPage>
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
+              smoothPageRoute(
                 builder: (_) => PlayerInfoQueryPage(initialName: player.name),
               ),
             );

@@ -4,6 +4,7 @@ import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/guild_detail_page.dart';
 import 'package:grow_castle_calculator/services/player_api_service.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
+import 'package:grow_castle_calculator/utils/page_transitions.dart';
 
 class GuildInfoQueryPage extends StatefulWidget {
   const GuildInfoQueryPage({super.key});
@@ -234,7 +235,7 @@ class _GuildInfoQueryPageState extends State<GuildInfoQueryPage>
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
+              smoothPageRoute(
                 builder: (_) => GuildDetailPage(guildName: guild.name),
               ),
             );

@@ -12,6 +12,7 @@ import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
 import 'package:grow_castle_calculator/utils/number_utils.dart';
+import 'package:grow_castle_calculator/utils/page_transitions.dart';
 import 'package:grow_castle_calculator/widgets/season_progress_dialog.dart';
 
 class CalculatorPage extends StatefulWidget {
@@ -303,7 +304,7 @@ class _CalculatorPageState extends State<CalculatorPage>
   Future<void> _openHistoryArchives() async {
     final archive = await Navigator.push<CalculatorArchive>(
       context,
-      MaterialPageRoute(
+      smoothPageRoute(
         builder: (_) => const HistoryArchivesPage(),
       ),
     );

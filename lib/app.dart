@@ -114,8 +114,8 @@ class _HomePageState extends State<HomePage> {
           FocusManager.instance.primaryFocus?.unfocus();
           _pageController.animateToPage(
             index,
-            duration: const Duration(milliseconds: 150),
-            curve: Curves.easeInOut,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOutCubic,
           );
         },
         type: BottomNavigationBarType.fixed,
