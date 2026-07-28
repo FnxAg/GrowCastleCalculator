@@ -546,6 +546,54 @@ class _CalculatorPageState extends State<CalculatorPage>
     _totalGoldString = decreaseNumSize(_totalGold, context);
   }
 
+  // ── Reorder ──────────────────────────────────────────────────────────────
+
+  void _reorderUnitCards(int oldIndex, int newIndex) {
+    // First two slots (castle / TA) are pinned — ignore drags involving them.
+    if (oldIndex < _defaultFormCount || newIndex < _defaultFormCount) return;
+
+    setState(() {
+      // When moving down, the target index shifts up after removal.
+      final to = oldIndex < newIndex ? newIndex - 1 : newIndex;
+
+      void swap(List<dynamic> list, int i, int j) {
+        final temp = list[i];
+        list[i] = list[j];
+        list[j] = temp;
+      }
+
+      // Swap level / checkbox / gold data (full-size lists, indices 0.._maxFormLimit-1).
+      swap(_targetLevel, oldIndex, to);
+      swap(_targetCheckbox, oldIndex, to);
+      swap(_targetGold, oldIndex, to);
+      swap(_targetGoldString, oldIndex, to);
+
+      // Swap level controller text.
+      final tmpLevel = _targetLevelControllers[oldIndex].text;
+      _targetLevelControllers[oldIndex].text = _targetLevelControllers[to].text;
+      _targetLevelControllers[to].text = tmpLevel;
+
+      // Swap name data — indices 0..1 use _defaultFormNameControllers,
+      // indices ≥2 use _targetName / _targetNameControllers.
+      String readName(int idx) => idx < _defaultFormCount
+          ? _defaultFormNameControllers[idx].text
+          : _targetName[idx - _defaultFormCount];
+
+      void writeName(int idx, String v) {
+        if (idx < _defaultFormCount) {
+          _defaultFormNameControllers[idx].text = v;
+        } else {
+          _targetName[idx - _defaultFormCount] = v;
+          _targetNameControllers[idx - _defaultFormCount].text = v;
+        }
+      }
+
+      final tmpName = readName(oldIndex);
+      writeName(oldIndex, readName(to));
+      writeName(to, tmpName);
+    });
+  }
+
   // ── Build ──────────────────────────────────────────────────────────────
 
   @override
@@ -960,11 +1008,11 @@ class _CalculatorPageState extends State<CalculatorPage>
             ),
 
             // ── Unit list ────────────────────────────────────────────────
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => _buildUnitCard(context, index, theme),
-                childCount: _dynamicFormNum,
-              ),
+            SliverReorderableList(
+              itemBuilder: (context, index) =>
+                  _buildUnitCard(context, index, theme, key: ValueKey(index)),
+              itemCount: _dynamicFormNum,
+              onReorder: _reorderUnitCards,
             ),
 
             // Bottom padding
@@ -997,10 +1045,12 @@ class _CalculatorPageState extends State<CalculatorPage>
     );
   }
 
-  Widget _buildUnitCard(BuildContext context, int index, ThemeData theme) {
+  Widget _buildUnitCard(BuildContext context, int index, ThemeData theme,
+      {Key? key}) {
     final loc = AppLocalizations.of(context)!;
 
     return Padding(
+      key: key,
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: Card(
         elevation: 0,
@@ -1078,13 +1128,24 @@ class _CalculatorPageState extends State<CalculatorPage>
               ),
 
               // Stats row — only visible columns are rendered.
-              if (_visibleColumns.any((v) => v))
+              if (_visibleColumns.any((v) => v) ||
+                  index >= _defaultFormCount)
                 Padding(
-                  padding: const EdgeInsets.only(left: 40, top: 4),
+                  padding: const EdgeInsets.only(left: 8, top: 4),
                   child: DefaultTextStyle(
                     style: theme.textTheme.bodySmall!,
                     child: Row(
                       children: [
+                        if (index >= _defaultFormCount)
+                          ReorderableDragStartListener(
+                            index: index,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 4),
+                              child: Icon(Icons.drag_handle,
+                                  size: 20,
+                                  color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                          ),
                         if (_visibleColumns[0])
                           _statCell(
                             _targetGoldString[index],
