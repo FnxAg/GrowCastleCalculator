@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -8,6 +7,7 @@ import 'package:grow_castle_calculator/app.dart';
 import 'package:grow_castle_calculator/enums/locale_option.dart';
 import 'package:grow_castle_calculator/enums/theme_option.dart';
 import 'package:grow_castle_calculator/models/update_info.dart';
+import 'package:grow_castle_calculator/providers/locale_provider.dart';
 import 'package:grow_castle_calculator/providers/theme_provider.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:grow_castle_calculator/services/update_checker.dart';
@@ -26,6 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final localeProvider = Provider.of<LocaleProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -43,7 +44,8 @@ class _SettingsPageState extends State<SettingsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  LocaleOption.fromLocaleCode2LocaleOption(localeChoice)
+                  LocaleOption.fromLocaleCode2LocaleOption(
+                          localeProvider.localeChoice)
                       .localeString,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -55,13 +57,8 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: () async {
               final choice = await _showLanguageDialog();
               if (choice != null) {
-                setState(() {
-                  Get.updateLocale(
-                    LocaleOption.values[choice].localeType,
-                  );
-                  localeChoice = LocaleOption.values[choice].localeCode;
-                  PreferencesService.setLocaleChoice(localeChoice);
-                });
+                localeProvider.setLocale(choice);
+                PreferencesService.setLocaleChoice(choice);
               }
             },
           ),
@@ -147,6 +144,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<int?> _showLanguageDialog() async {
     final loc = AppLocalizations.of(context)!;
+    final currentLocaleChoice =
+        Provider.of<LocaleProvider>(context, listen: false).localeChoice;
     return showDialog<int>(
       context: context,
       builder: (ctx) => SimpleDialog(
@@ -154,17 +153,17 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           _buildDialogOption(
             label: loc.systemDefault,
-            isSelected: localeChoice == 0,
+            isSelected: currentLocaleChoice == 0,
             onTap: () => Navigator.of(ctx).pop(0),
           ),
           _buildDialogOption(
             label: loc.zh_CN_withCode,
-            isSelected: localeChoice == 1,
+            isSelected: currentLocaleChoice == 1,
             onTap: () => Navigator.of(ctx).pop(1),
           ),
           _buildDialogOption(
             label: loc.en_withCode,
-            isSelected: localeChoice == 2,
+            isSelected: currentLocaleChoice == 2,
             onTap: () => Navigator.of(ctx).pop(2),
           ),
         ],

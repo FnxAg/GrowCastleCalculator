@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:get/get.dart';
+import 'package:grow_castle_calculator/app.dart';
 import '../l10n/app_localizations.dart';
 
 enum LocaleOption {
@@ -21,18 +21,18 @@ enum LocaleOption {
   String get localeString {
     switch (this) {
       case LocaleOption.sys:
-        return AppLocalizations.of(Get.context!)!.systemDefault;
+        return AppLocalizations.of(globalNavigatorKey.currentContext!)!.systemDefault;
       case LocaleOption.zh:
-        return AppLocalizations.of(Get.context!)!.zh_CN_withCode;
+        return AppLocalizations.of(globalNavigatorKey.currentContext!)!.zh_CN_withCode;
       case LocaleOption.en:
-        return AppLocalizations.of(Get.context!)!.en_withCode;
+        return AppLocalizations.of(globalNavigatorKey.currentContext!)!.en_withCode;
     }
   }
 
   Locale get localeType {
     switch (this) {
       case LocaleOption.sys:
-        return Get.deviceLocale!;
+        return PlatformDispatcher.instance.locale;
       case LocaleOption.zh:
         return const Locale('zh');
       case LocaleOption.en:

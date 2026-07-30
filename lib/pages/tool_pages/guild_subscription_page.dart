@@ -6,7 +6,6 @@ import 'package:grow_castle_calculator/services/player_api_service.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/player_info_query.dart';
 import 'package:grow_castle_calculator/services/preferences_service.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
-import 'package:grow_castle_calculator/utils/page_transitions.dart';
 
 class GuildSubscriptionPage extends StatefulWidget {
   const GuildSubscriptionPage({super.key});
@@ -471,7 +470,7 @@ class _GuildSubscriptionPageState extends State<GuildSubscriptionPage>
           onTap: () {
             Navigator.push(
               context,
-              smoothPageRoute(
+              MaterialPageRoute(
                 builder: (_) =>
                     PlayerInfoQueryPage(initialName: member.name),
               ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:grow_castle_calculator/app.dart';
 import '../l10n/app_localizations.dart';
 
 enum ThemeOption {
@@ -21,11 +21,11 @@ enum ThemeOption {
   String get themeString {
     switch (this) {
       case ThemeOption.system:
-        return AppLocalizations.of(Get.context!)!.systemDefault;
+        return AppLocalizations.of(globalNavigatorKey.currentContext!)!.systemDefault;
       case ThemeOption.light:
-        return AppLocalizations.of(Get.context!)!.lightMode;
+        return AppLocalizations.of(globalNavigatorKey.currentContext!)!.lightMode;
       case ThemeOption.dark:
-        return AppLocalizations.of(Get.context!)!.darkMode;
+        return AppLocalizations.of(globalNavigatorKey.currentContext!)!.darkMode;
     }
   }
 

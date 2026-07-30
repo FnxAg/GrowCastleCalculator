@@ -4,7 +4,6 @@ import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/player_info_query.dart';
 import 'package:grow_castle_calculator/services/player_api_service.dart';
 import 'package:grow_castle_calculator/utils/game_calculations.dart';
-import 'package:grow_castle_calculator/utils/page_transitions.dart';
 
 class PlayerRankingPage extends StatefulWidget {
   const PlayerRankingPage({super.key});
@@ -225,7 +224,7 @@ class _PlayerRankingPageState extends State<PlayerRankingPage>
           onTap: () {
             Navigator.push(
               context,
-              smoothPageRoute(
+              MaterialPageRoute(
                 builder: (_) => PlayerInfoQueryPage(initialName: player.name),
               ),
             );

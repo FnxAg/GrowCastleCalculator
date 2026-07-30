@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator/utils/page_transitions.dart';
 import 'package:grow_castle_calculator/models/gold_calculator_archive.dart';
 import 'package:grow_castle_calculator/models/gold_calculator_data.dart';
 import 'package:grow_castle_calculator/pages/calculator_page.dart';
@@ -194,7 +193,7 @@ class _GoldCalculatorState extends State<GoldCalculator>
   Future<void> _openHistoryArchives() async {
     final archive = await Navigator.push<GoldCalculatorArchive>(
       context,
-      smoothPageRoute(
+      MaterialPageRoute(
         builder: (_) => const GoldHistoryArchivesPage(),
       ),
     );

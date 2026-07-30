@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:grow_castle_calculator/utils/page_transitions.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/wave_speed_query.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/player_info_query.dart';
 import 'package:grow_castle_calculator/pages/tool_pages/player_ranking_page.dart';
@@ -53,7 +52,7 @@ class _ToolPageState extends State<ToolPage> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      smoothPageRoute(
+                      MaterialPageRoute(
                         builder: (context) => const GoldCalculator(),
                       ),
                     );
@@ -68,7 +67,7 @@ class _ToolPageState extends State<ToolPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  smoothPageRoute(
+                  MaterialPageRoute(
                     builder: (context) => const WaveSpeedQueryPage(),
                   ),
                 );
@@ -81,7 +80,7 @@ class _ToolPageState extends State<ToolPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  smoothPageRoute(
+                  MaterialPageRoute(
                     builder: (context) => const PlayerInfoQueryPage(),
                   ),
                 );
@@ -94,7 +93,7 @@ class _ToolPageState extends State<ToolPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  smoothPageRoute(
+                  MaterialPageRoute(
                     builder: (context) => const PlayerRankingPage(),
                   ),
                 );
@@ -107,7 +106,7 @@ class _ToolPageState extends State<ToolPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  smoothPageRoute(
+                  MaterialPageRoute(
                     builder: (context) => const GuildInfoQueryPage(),
                   ),
                 );
@@ -120,7 +119,7 @@ class _ToolPageState extends State<ToolPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  smoothPageRoute(
+                  MaterialPageRoute(
                     builder: (context) => const HellRankingPage(),
                   ),
                 );
@@ -133,7 +132,7 @@ class _ToolPageState extends State<ToolPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  smoothPageRoute(
+                  MaterialPageRoute(
                     builder: (context) => const GuildSubscriptionPage(),
                   ),
                 );

@@ -1,17 +1,17 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 import 'package:grow_castle_calculator/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator/pages/calculator_page.dart';
 import 'package:grow_castle_calculator/pages/settings_page.dart';
 import 'package:grow_castle_calculator/pages/tool_page.dart';
-import 'package:grow_castle_calculator/enums/locale_option.dart';
+import 'package:grow_castle_calculator/providers/locale_provider.dart';
 import 'package:grow_castle_calculator/providers/theme_provider.dart';
 
-/// Runtime locale choice. Initialized in [main] and mutated by [SettingsPage].
-int localeChoice = 0;
+/// Global navigator key used to access [BuildContext] from places where it is
+/// not naturally available (e.g. enums).
+final GlobalKey<NavigatorState> globalNavigatorKey = GlobalKey<NavigatorState>();
 
 /// Runtime theme choice. Initialized in [main] and mutated by [SettingsPage].
 int themeChoice = 0;
@@ -33,28 +33,36 @@ class MyApp extends StatelessWidget {
               brightness: Brightness.dark,
             );
 
-        return Consumer<ThemeProvider>(
-          builder: (context, themeProvider, child) => GetMaterialApp(
+        final lightTheme = ThemeData(
+          useMaterial3: true,
+          colorScheme: lightColorScheme,
+          pageTransitionsTheme: const PageTransitionsTheme(
+            builders: <TargetPlatform, PageTransitionsBuilder>{
+              TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+            },
+          ),
+        );
+        final darkTheme = ThemeData(
+          useMaterial3: true,
+          colorScheme: darkColorScheme,
+          pageTransitionsTheme: const PageTransitionsTheme(
+            builders: <TargetPlatform, PageTransitionsBuilder>{
+              TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+            },
+          ),
+        );
+
+        return Consumer2<ThemeProvider, LocaleProvider>(
+          builder: (context, themeProvider, localeProvider, child) =>
+              MaterialApp(
+            navigatorKey: globalNavigatorKey,
             onGenerateTitle: (BuildContext context) =>
                 AppLocalizations.of(context)!.appName,
-            locale: LocaleOption.fromLocaleCode2LocaleOption(localeChoice).localeType,
-            fallbackLocale: const Locale('en'),
+            locale: localeProvider.locale,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            theme: ThemeData(
-              useMaterial3: true, 
-              colorScheme: lightColorScheme, 
-              pageTransitionsTheme: 
-                const PageTransitionsTheme(
-                  builders: <TargetPlatform, PageTransitionsBuilder>{
-                    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-                  }
-                )
-            ),
-            darkTheme: ThemeData(
-              useMaterial3: true,
-              colorScheme: darkColorScheme,
-            ),
+            theme: lightTheme,
+            darkTheme: darkTheme,
             themeMode: themeProvider.themeMode,
             home: const HomePage(),
           ),
@@ -123,8 +131,8 @@ class _HomePageState extends State<HomePage> {
           FocusManager.instance.primaryFocus?.unfocus();
           _pageController.animateToPage(
             index,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.ease,
           );
         },
         type: BottomNavigationBarType.fixed,
