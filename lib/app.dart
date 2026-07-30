@@ -41,7 +41,16 @@ class MyApp extends StatelessWidget {
             fallbackLocale: const Locale('en'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
+            theme: ThemeData(
+              useMaterial3: true, 
+              colorScheme: lightColorScheme, 
+              pageTransitionsTheme: 
+                const PageTransitionsTheme(
+                  builders: <TargetPlatform, PageTransitionsBuilder>{
+                    TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
+                  }
+                )
+            ),
             darkTheme: ThemeData(
               useMaterial3: true,
               colorScheme: darkColorScheme,
